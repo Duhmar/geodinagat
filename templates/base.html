@@ -6,7 +6,6 @@
     <title>Dinagat Islands Tourist spots</title>
     <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600&display=swap" rel="stylesheet">
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
-    
     <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY=" crossorigin=""/>
     
     <style>
@@ -24,6 +23,7 @@
             font-family: var(--body-font);
             margin: 0;
             font-weight: 400;
+            transition: color 0.5s ease;
         }
 
         @keyframes rainbow-flow {
@@ -73,107 +73,85 @@
             outline: none;
         }
 
-        /* NEW: GLASS MOON THEME TOGGLE */
+        /* NEW: FROSTED GLASS THEME TOGGLE ORB */
         .theme-toggle-btn {
-            background: rgba(255, 255, 255, 0.1);
-            border: 1px solid rgba(255, 255, 255, 0.2);
-            backdrop-filter: blur(10px);
+            background: rgba(255, 255, 255, 0.15);
+            border: 1px solid rgba(255, 255, 255, 0.3);
+            border-top: 1px solid rgba(255, 255, 255, 0.6);
+            backdrop-filter: blur(15px);
+            -webkit-backdrop-filter: blur(15px);
             color: var(--gold-effect);
             border-radius: 50%;
-            width: 40px; height: 40px;
+            width: 45px; height: 45px;
             display: flex; align-items: center; justify-content: center;
             cursor: pointer; transition: 0.3s;
             margin-right: 15px;
-            font-size: 1.2rem;
-            box-shadow: 0 4px 10px rgba(0,0,0,0.2);
+            font-size: 1.3rem;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.2), inset 0 0 10px rgba(255,255,255,0.1);
         }
-        .theme-toggle-btn:hover { background: rgba(255, 255, 255, 0.25); transform: scale(1.1); }
+        .theme-toggle-btn:hover { background: rgba(255, 255, 255, 0.3); transform: scale(1.1); box-shadow: 0 5px 20px rgba(255,235,59,0.4); }
 
-        /* HAMBURGER BUTTON */
-        .hamburger-btn {
-            background: transparent;
-            border: none;
-            color: var(--gold-effect);
-            font-size: 2rem;
-            line-height: 1;
-            padding: 0 10px;
-            cursor: pointer;
-            transition: 0.3s;
+        /* ANIMATION OVERLAY FOR SUN/MOON EXPANSION */
+        .theme-transition-overlay {
+            position: fixed;
+            width: 10px; height: 10px;
+            border-radius: 50%;
+            pointer-events: none;
+            z-index: 999; /* Below navbar, above content */
+            transform: translate(-50%, -50%) scale(0);
+            transition: transform 0.7s cubic-bezier(0.25, 1, 0.5, 1), opacity 0.5s ease;
+            opacity: 0;
         }
-        .hamburger-btn:hover {
-            text-shadow: 0 0 20px rgba(255, 235, 59, 0.9);
-            transform: scale(1.1);
+        .theme-transition-overlay.expand-light {
+            background: radial-gradient(circle, #ffeb3b 0%, rgba(255,235,59,0.8) 50%, rgba(255,235,59,0) 100%);
+            transform: translate(-50%, -50%) scale(400);
+            opacity: 1;
+        }
+        .theme-transition-overlay.expand-dark {
+            background: radial-gradient(circle, #0f172a 0%, rgba(15,23,42,0.9) 50%, rgba(15,23,42,0) 100%);
+            transform: translate(-50%, -50%) scale(400);
+            opacity: 1;
         }
 
-        /* LIQUID DROPLET MENU CONTAINER */
+        .hamburger-btn { background: transparent; border: none; color: var(--gold-effect); font-size: 2rem; line-height: 1; padding: 0 10px; cursor: pointer; transition: 0.3s; }
+        .hamburger-btn:hover { text-shadow: 0 0 20px rgba(255, 235, 59, 0.9); transform: scale(1.1); }
+
         .glass-dropdown {
-            position: absolute;
-            top: 60px;
-            right: 0;
-            background: rgba(30, 30, 40, 0.15); 
-            backdrop-filter: blur(40px) saturate(200%);
-            -webkit-backdrop-filter: blur(40px) saturate(200%);
-            border: 1px solid rgba(255, 255, 255, 0.2);
-            border-top: 1px solid rgba(255, 255, 255, 0.5);
-            border-left: 1px solid rgba(255, 255, 255, 0.5);
-            border-radius: 24px;
-            padding: 12px; 
-            min-width: 200px;
-            z-index: 10500; 
-            box-shadow: 0 20px 40px rgba(0,0,0,0.5), inset 0 0 20px rgba(255,255,255,0.05);
-            display: none;
-            flex-direction: column;
-            gap: 8px; 
+            position: absolute; top: 60px; right: 0; background: rgba(30, 30, 40, 0.15); backdrop-filter: blur(40px) saturate(200%);
+            -webkit-backdrop-filter: blur(40px) saturate(200%); border: 1px solid rgba(255, 255, 255, 0.2);
+            border-top: 1px solid rgba(255, 255, 255, 0.5); border-left: 1px solid rgba(255, 255, 255, 0.5);
+            border-radius: 24px; padding: 12px; min-width: 200px; z-index: 10500; box-shadow: 0 20px 40px rgba(0,0,0,0.5), inset 0 0 20px rgba(255,255,255,0.05);
+            display: none; flex-direction: column; gap: 8px; 
         }
 
-        /* INDIVIDUAL DROPLET/PILL STYLING */
         .glass-dropdown a, .glass-dropdown button {
-            color: white;
-            padding: 12px 20px;
-            text-decoration: none;
-            display: block;
-            background: rgba(255, 255, 255, 0.1); 
-            border: 1px solid rgba(255, 255, 255, 0.15);
-            border-radius: 50px; 
-            text-align: center; 
-            width: 100%;
-            transition: 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
-            font-family: var(--body-font);
-            font-size: 0.95rem;
-            box-shadow: 0 4px 10px rgba(0,0,0,0.2);
+            color: white; padding: 12px 20px; text-decoration: none; display: block; background: rgba(255, 255, 255, 0.1); 
+            border: 1px solid rgba(255, 255, 255, 0.15); border-radius: 50px; text-align: center; width: 100%; transition: 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275); font-family: var(--body-font); font-size: 0.95rem; box-shadow: 0 4px 10px rgba(0,0,0,0.2);
         }
+        .glass-dropdown a:hover, .glass-dropdown button:hover { background: var(--gold-effect); color: black !important; font-weight: 600; transform: scale(1.05); box-shadow: 0 5px 15px rgba(255, 235, 59, 0.4); border-color: var(--gold-effect); }
 
-        .glass-dropdown a:hover, .glass-dropdown button:hover {
-            background: var(--gold-effect); 
-            color: black !important;
-            font-weight: 600;
-            transform: scale(1.05); 
-            box-shadow: 0 5px 15px rgba(255, 235, 59, 0.4);
-            border-color: var(--gold-effect);
-        }
-
-        /* --- PERFECTED DARK MODE --- */
-        body.dark-mode {
-            background: linear-gradient(-45deg, #0f172a, #1e1e2f, #0f3460, #16213e);
-            color: #ffffff;
-        }
-        .dark-mode .glass-panel-widget, .dark-mode .glass-dropdown, .dark-mode .navbar-container {
-            background: rgba(10, 10, 15, 0.5);
-            border-color: rgba(255, 255, 255, 0.1);
-        }
+        /* --- DARK MODE --- */
+        body.dark-mode { background: linear-gradient(-45deg, #0f172a, #1e1e2f, #0f3460, #16213e); color: #ffffff; }
+        .dark-mode .glass-panel-widget, .dark-mode .glass-dropdown, .dark-mode .navbar-container { background: rgba(10, 10, 15, 0.5); border-color: rgba(255, 255, 255, 0.1); }
         .dark-mode .hotel-card { background: rgba(0,0,0,0.6); }
         .dark-mode .theme-toggle-btn { background: rgba(0, 0, 0, 0.4); border-color: rgba(255,255,255,0.1); }
         .dark-mode input, .dark-mode textarea { color: white !important; background: rgba(0,0,0,0.4) !important; }
 
-        /* --- PERFECTED MOBILE UI FIXES --- */
-        @media (max-width: 768px) {
-            .navbar-container { padding: 10px 15px; }
-            .search-wrapper { max-width: 160px; } /* Prevent search bar from taking over */
+        /* --- PERFECTED PORTRAIT MOBILE FIXES --- */
+        @media (max-width: 768px) and (orientation: portrait) {
+            .navbar-container { padding: 8px 12px; }
+            .navbar-brand { font-size: 1.3rem !important; }
+            .search-wrapper { max-width: 130px; } 
+            .nav-search-input { font-size: 0.75rem !important; padding: 5px 12px !important; }
             
-            /* Center the widgets so they don't leak off screen */
+            /* Shrink menu controls */
+            .theme-toggle-btn { width: 35px; height: 35px; font-size: 1rem; margin-right: 8px; }
+            .hamburger-btn { font-size: 1.5rem; padding: 0 5px; }
+
+            /* Perfectly constrained portrait widgets */
             .centered-panel {
-                width: 90vw !important; 
-                max-width: 400px;
+                width: 92vw !important; 
+                max-width: 100%;
                 left: 50% !important;
                 top: 50% !important;
                 transform: translate(-50%, -50%) !important;
@@ -181,56 +159,46 @@
             .chat-panel {
                 position: fixed !important;
                 width: 92vw !important;
-                height: 65vh !important;
-                bottom: 85px !important;
+                height: 60vh !important;
+                bottom: 80px !important;
                 left: 50% !important;
                 transform: translateX(-50%) !important;
             }
-            .magical-chat-widget { 
-                bottom: 15px; 
-                left: 50%; 
-                transform: translateX(-50%); 
-                width: 100%; 
-                text-align: center; 
-            }
-            .widget-toggle-btn { margin: 0 auto; }
-            .glass-dropdown { right: -10px; width: 220px; } /* Keep menu readable */
+            .magical-chat-widget { bottom: 15px; left: 50%; transform: translateX(-50%); width: 100%; text-align: center; }
+            .widget-toggle-btn { margin: 0 auto; width: 55px; height: 55px; font-size: 0.8rem; }
+            .glass-dropdown { right: -5px; width: 200px; } 
+            .widget-header h4 { font-size: 1rem; }
         }
 
-        #gold-loader-overlay {
-            position: fixed; top: 0; left: 0; width: 100vw; height: 100vh;
-            background: inherit; backdrop-filter: blur(20px); z-index: 9999;
-            display: flex; justify-content: center; align-items: center;
+        /* Ensure Landscape mobile remains perfect */
+        @media (max-width: 850px) and (orientation: landscape) {
+            .chat-panel { height: 75vh !important; }
         }
-        .gold-spinner {
-            width: 50px; height: 50px; border: 4px solid rgba(255, 255, 255, 0.2);
-            border-top-color: var(--gold-effect); border-radius: 50%;
-            animation: spin 1s linear infinite;
-        }
+
+        #gold-loader-overlay { position: fixed; top: 0; left: 0; width: 100vw; height: 100vh; background: inherit; backdrop-filter: blur(20px); z-index: 9999; display: flex; justify-content: center; align-items: center; }
+        .gold-spinner { width: 50px; height: 50px; border: 4px solid rgba(255, 255, 255, 0.2); border-top-color: var(--gold-effect); border-radius: 50%; animation: spin 1s linear infinite; }
         @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
     </style>
 </head>
 <body>
     <div id="gold-loader-overlay"><div class="gold-spinner"></div></div>
 
-    <div class="container-fluid px-5">
+    <!-- The invisible DIV that handles the sun/moon burst animation -->
+    <div id="theme-transition-overlay" class="theme-transition-overlay"></div>
+
+    <div class="container-fluid px-5 px-md-3">
         <nav class="navbar navbar-container d-flex w-100 align-items-center">
             
             <div style="flex: 1;">
-                <a class="navbar-brand fs-3" href="{% url 'home' %}">
-                    GeoDinagat
-                </a>
+                <a class="navbar-brand fs-3" href="{% url 'home' %}">GeoDinagat</a>
             </div>
 
             <div class="d-flex justify-content-center" style="flex: 1.5;">
                 {% with url_name=request.resolver_match.url_name %}
                 {% if url_name != 'profile' and url_name != 'edit_profile' %}
                 <form action="{% url 'home' %}" method="GET" class="search-wrapper m-0">
-                    <input type="text" name="q" class="form-control nav-search-input" 
-                           placeholder="Search..." value="{{ request.GET.q }}">
-                    <button type="submit" style="position: absolute; right: 5px; top: 4px; background: var(--gold-effect); border: none; border-radius: 50px; font-size: 0.65rem; padding: 4px 12px; color: black; transition: 0.3s ease; font-weight: 600;">
-                        SEARCH
-                    </button>
+                    <input type="text" name="q" class="form-control nav-search-input" placeholder="Search..." value="{{ request.GET.q }}">
+                    <button type="submit" style="position: absolute; right: 5px; top: 4px; background: var(--gold-effect); border: none; border-radius: 50px; font-size: 0.65rem; padding: 4px 12px; color: black; transition: 0.3s ease; font-weight: 600;">SEARCH</button>
                 </form>
                 {% endif %}
                 {% endwith %}
@@ -238,7 +206,8 @@
 
             <div class="d-flex justify-content-end align-items-center" style="flex: 1; position: relative;">
                 
-                <button id="themeToggleBtn" class="theme-toggle-btn" onclick="toggleDarkMode()">🌙</button>
+                <!-- GLASS THEME BUTTON -->
+                <button id="themeToggleBtn" class="theme-toggle-btn" onclick="toggleDarkMode(event)">🌙</button>
 
                 <button id="customHamburgerBtn" class="hamburger-btn" onclick="toggleMenu()">☰</button>
                 
@@ -248,7 +217,8 @@
                     
                     {% if user.is_authenticated %}
                         <a href="{% url 'analytics_dashboard' %}">Analytics</a>
-                        <a href="{% url 'report_list' %}">Uploads</a> <a href="#" onclick="toggleHotel(); toggleMenu(); return false;">Hotel</a>
+                        <a href="{% url 'report_list' %}">Uploads</a> 
+                        <a href="#" onclick="toggleHotel(); toggleMenu(); return false;">Hotel</a>
                         <a href="{% url 'profile' %}">Profile</a>
                         <form method="POST" action="{% url 'logout' %}" class="m-0 d-flex w-100">
                             {% csrf_token %}
@@ -259,7 +229,6 @@
                     {% endif %}
                 </div>
             </div>
-
         </nav>
     </div>
 
@@ -267,93 +236,33 @@
         {% block content %}{% endblock %}
     </div>
 
+    <!-- WIDGETS CSS -->
     <style>
-        /* TRUE LIQUID GLASS FOR ALL PANELS */
-        .glass-panel-widget {
-            display: none; 
-            background: rgba(20, 20, 30, 0.25); 
-            backdrop-filter: blur(40px) saturate(200%);
-            -webkit-backdrop-filter: blur(40px) saturate(200%);
-            border: 1px solid rgba(255, 255, 255, 0.2); 
-            border-top: 1px solid rgba(255, 255, 255, 0.5); 
-            border-left: 1px solid rgba(255, 255, 255, 0.5); 
-            border-radius: 28px; 
-            box-shadow: 0 30px 60px rgba(0, 0, 0, 0.5), inset 0 0 25px rgba(255, 255, 255, 0.05); 
-            flex-direction: column; 
-            overflow: hidden;
-            animation: popUpCenter 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
-        }
-        
-        @keyframes popUpCenter { 
-            from { opacity: 0; transform: translate(-50%, -50%) scale(0.8); } 
-            to { opacity: 1; transform: translate(-50%, -50%) scale(1); } 
-        }
-
-        .fullscreen-panel {
-            position: fixed;
-            top: 50%;
-            left: 50%;
-            transform: translate(-50%, -50%);
-            width: 90vw !important;
-            height: 90vh !important;
-            z-index: 10000;
-        }
-
-        .centered-panel {
-            position: fixed;
-            top: 50%;
-            left: 50%;
-            transform: translate(-50%, -50%);
-            width: 450px;
-            max-height: 85vh;
-            z-index: 10000;
-        }
-        
-        .widget-header { 
-            background: rgba(0, 0, 0, 0.2); 
-            padding: 15px 25px; 
-            display: flex; 
-            justify-content: space-between; 
-            align-items: center; 
-            border-bottom: 1px solid rgba(255, 255, 255, 0.1); 
-        }
+        .glass-panel-widget { display: none; background: rgba(20, 20, 30, 0.25); backdrop-filter: blur(40px) saturate(200%); -webkit-backdrop-filter: blur(40px) saturate(200%); border: 1px solid rgba(255, 255, 255, 0.2); border-top: 1px solid rgba(255, 255, 255, 0.5); border-left: 1px solid rgba(255, 255, 255, 0.5); border-radius: 28px; box-shadow: 0 30px 60px rgba(0, 0, 0, 0.5), inset 0 0 25px rgba(255, 255, 255, 0.05); flex-direction: column; overflow: hidden; animation: popUpCenter 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275); }
+        @keyframes popUpCenter { from { opacity: 0; transform: translate(-50%, -50%) scale(0.8); } to { opacity: 1; transform: translate(-50%, -50%) scale(1); } }
+        .fullscreen-panel { position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%); width: 90vw !important; height: 90vh !important; z-index: 10000; }
+        .centered-panel { position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%); width: 450px; max-height: 85vh; z-index: 10000; }
+        .widget-header { background: rgba(0, 0, 0, 0.2); padding: 15px 25px; display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid rgba(255, 255, 255, 0.1); }
         .widget-title { color: var(--gold-effect); margin: 0; font-size: 1.1rem; text-shadow: 0 0 10px rgba(255, 235, 59, 0.5); }
-        
-        /* RESTORED CHAT SPECIFICS */
         .magical-chat-widget { position: fixed; bottom: 30px; left: 30px; z-index: 9999; font-family: var(--body-font); }
-        .chat-panel { 
-            width: 350px; height: 500px; transform: none; position: relative; bottom: 15px; 
-            animation: popUp 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275); transform-origin: bottom left; 
-        }
+        .chat-panel { width: 350px; height: 500px; transform: none; position: relative; bottom: 15px; animation: popUp 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275); transform-origin: bottom left; }
         @keyframes popUp { from { opacity: 0; transform: scale(0.5); } to { opacity: 1; transform: scale(1); } }
-        
         .chat-messages { flex: 1; padding: 15px; overflow-y: auto; display: flex; flex-direction: column; gap: 10px; }
         .message { max-width: 80%; padding: 10px 15px; border-radius: 18px; font-size: 0.85rem; line-height: 1.4; }
         .msg-bot { background: rgba(255, 255, 255, 0.1); color: white; align-self: flex-start; border-bottom-left-radius: 4px; border: 1px solid rgba(255,255,255,0.1); }
         .msg-user { background: var(--gold-effect); color: black; align-self: flex-end; border-bottom-right-radius: 4px; box-shadow: 0 5px 15px rgba(255, 235, 59, 0.3); }
-        
         .chat-input-area { padding: 15px; background: rgba(0, 0, 0, 0.2); border-top: 1px solid rgba(255, 255, 255, 0.1); display: flex; gap: 10px; }
         .chat-input { flex: 1; background: rgba(255, 255, 255, 0.15); border: 1px solid rgba(255, 255, 255, 0.3); border-radius: 50px; padding: 8px 15px; color: white !important; font-size: 0.85rem; outline: none; transition: 0.3s; }
         .chat-input:focus { border-color: var(--gold-effect); background: rgba(0,0,0,0.3); }
         .chat-send-btn { background: var(--gold-effect); border: none; border-radius: 50%; width: 38px; height: 38px; color: black; cursor: pointer; display: flex; align-items: center; justify-content: center; transition: 0.2s; box-shadow: 0 0 10px rgba(255, 235, 59, 0.4);}
-        .widget-toggle-btn {
-            background: rgba(20, 20, 20, 0.6); backdrop-filter: blur(15px); -webkit-backdrop-filter: blur(15px);
-            border: 2px solid var(--gold-effect); color: var(--gold-effect);
-            width: 60px; height: 60px; border-radius: 50%; font-size: 0.9rem; text-transform: uppercase;
-            cursor: pointer; box-shadow: 0 5px 20px rgba(0, 0, 0, 0.5), 0 0 15px rgba(255, 235, 59, 0.3);
-            transition: 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275); display: flex; align-items: center; justify-content: center;
-        }
+        .widget-toggle-btn { background: rgba(20, 20, 20, 0.6); backdrop-filter: blur(15px); -webkit-backdrop-filter: blur(15px); border: 2px solid var(--gold-effect); color: var(--gold-effect); width: 60px; height: 60px; border-radius: 50%; font-size: 0.9rem; text-transform: uppercase; cursor: pointer; box-shadow: 0 5px 20px rgba(0, 0, 0, 0.5), 0 0 15px rgba(255, 235, 59, 0.3); transition: 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275); display: flex; align-items: center; justify-content: center; }
         .widget-toggle-btn:hover { transform: scale(1.1); box-shadow: 0 10px 25px rgba(0, 0, 0, 0.6), 0 0 25px rgba(255, 235, 59, 0.6); }
-
-        /* Map Specifics */
         .map-container { flex: 1; padding: 15px; position: relative; display: flex; flex-direction: column; gap: 15px;}
         .routing-controls { background: rgba(0,0,0,0.25); border: 1px solid rgba(255,255,255,0.1); padding: 15px; border-radius: 18px; display: flex; flex-direction: row; gap: 15px; align-items: center; justify-content: center;}
         .route-select { background: rgba(255,255,255,0.15); border: 1px solid rgba(255,255,255,0.3); color: white; border-radius: 12px; padding: 10px; font-family: var(--body-font); font-size: 0.9rem; flex: 1; outline: none;}
         .route-select option { background: #1a1a1a; color: white; }
         .route-btn { background: var(--gold-effect); color: black; border: none; border-radius: 12px; padding: 10px 25px; font-weight: 600; cursor: pointer; transition: 0.3s;}
         .route-btn:hover { box-shadow: 0 0 15px rgba(255,235,59,0.5); transform: translateY(-2px); }
-        
-        /* Hotel specific styles */
         .hotel-card { background: rgba(0,0,0,0.25); padding: 20px; border-radius: 20px; border: 1px solid rgba(255,255,255,0.15); margin-bottom: 15px; transition: 0.3s; }
         .hotel-card:hover { background: rgba(0,0,0,0.4); border-color: rgba(255,255,255,0.3); transform: translateY(-3px); }
         .btn-glass-sm { background: var(--gold-effect); color: black; border-radius: 12px; padding: 8px 15px; font-size: 0.85rem; font-weight: 600; cursor: pointer; border: none; transition: 0.3s; box-shadow: 0 5px 15px rgba(255,235,59,0.3);}
@@ -388,7 +297,6 @@
                 <h5 style="color: var(--gold-effect); margin-bottom: 5px; font-weight: 600;">{{ hotel.name }}</h5>
                 <p class="small text-white opacity-75 mb-2">{{ hotel.location }} | ₱{{ hotel.price_per_night }}/night</p>
                 <p class="small mb-3 fw-bold" style="color: #00e676;" id="rooms-left-{{ hotel.id }}">Available Rooms: {{ hotel.available_rooms }}</p>
-                
                 {% if user.is_authenticated %}
                     <div class="d-flex gap-2 mb-3">
                         <input type="date" id="check-in-{{ hotel.id }}" class="chat-input" title="Check-in">
@@ -431,45 +339,70 @@
     </div>
 
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
-
     <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js" integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo=" crossorigin=""></script>
 
     <script>
-        // --- UNIVERSAL SECURE COOKIE READER ---
-        function getCookie(name) {
-            let cookieValue = null;
-            if (document.cookie && document.cookie !== '') {
-                const cookies = document.cookie.split(';');
-                for (let i = 0; i < cookies.length; i++) {
-                    const cookie = cookies[i].trim();
-                    if (cookie.substring(0, name.length + 1) === (name + '=')) {
-                        cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
-                        break;
-                    }
-                }
-            }
-            return cookieValue;
-        }
-
         // --- CUSTOM HAMBURGER MENU LOGIC ---
         function toggleMenu() {
             const menu = document.getElementById('customDropdown');
-            if (menu.style.display === 'none' || menu.style.display === '') {
-                menu.style.display = 'flex';
-            } else {
-                menu.style.display = 'none';
-            }
+            menu.style.display = (menu.style.display === 'none' || menu.style.display === '') ? 'flex' : 'none';
         }
 
         document.addEventListener('click', function(event) {
             const menu = document.getElementById('customDropdown');
             const btn = document.getElementById('customHamburgerBtn');
-            if (!menu.contains(event.target) && event.target !== btn) {
-                menu.style.display = 'none';
+            if (!menu.contains(event.target) && event.target !== btn) { menu.style.display = 'none'; }
+        });
+
+        // --- NEW SUN/MOON EXPLOSION ANIMATION ---
+        function toggleDarkMode(event) {
+            const isDark = document.body.classList.contains('dark-mode');
+            const overlay = document.getElementById('theme-transition-overlay');
+            const btn = document.getElementById('themeToggleBtn');
+            
+            // Set explosion center point to where the user clicked!
+            if (event) {
+                overlay.style.left = event.clientX + 'px';
+                overlay.style.top = event.clientY + 'px';
+            }
+
+            // Remove old classes to reset animation
+            overlay.classList.remove('expand-light', 'expand-dark');
+            void overlay.offsetWidth; // Force CSS reflow trick
+
+            if (isDark) {
+                // EXPLODE LIGHT (Sun)
+                overlay.classList.add('expand-light');
+                setTimeout(() => {
+                    document.body.classList.remove('dark-mode');
+                    localStorage.setItem('theme', 'light');
+                    if (btn) btn.textContent = '🌙';
+                    // Reset overlay after fade
+                    setTimeout(() => { overlay.classList.remove('expand-light'); }, 500);
+                }, 300); // Change happens halfway through animation
+            } else {
+                // ABSORB LIGHT (Moon)
+                overlay.classList.add('expand-dark');
+                setTimeout(() => {
+                    document.body.classList.add('dark-mode');
+                    localStorage.setItem('theme', 'dark');
+                    if (btn) btn.textContent = '☀️';
+                    setTimeout(() => { overlay.classList.remove('expand-dark'); }, 500);
+                }, 300);
+            }
+        }
+
+        window.addEventListener('load', function() {
+            const btn = document.getElementById('themeToggleBtn');
+            if (localStorage.getItem('theme') === 'dark') {
+                document.body.classList.add('dark-mode');
+                if (btn) btn.textContent = '☀️';
+            } else {
+                if (btn) btn.textContent = '🌙';
             }
         });
 
-        // --- CHAT LOGIC ---
+        // --- FRONTEND Llama 3 AI BYPASS (Fixes Server Block!) ---
         function toggleChat() {
             const panel = document.getElementById('chatPanel');
             const btn = document.getElementById('chatToggleBtn');
@@ -482,11 +415,15 @@
             }
         }
         function handleEnter(event) { if (event.key === 'Enter') sendMessage(); }
+        
         function sendMessage() {
             const inputField = document.getElementById('chatInput');
             const messageText = inputField.value.trim();
             if (messageText === '') return;
             const chatMessages = document.getElementById('chatMessages');
+
+            // 1. Paste your GROQ API Key exactly inside these quotes!
+            const GROQ_API_KEY = "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";
 
             const userMsgDiv = document.createElement('div');
             userMsgDiv.className = 'message msg-user';
@@ -502,24 +439,32 @@
             chatMessages.appendChild(typingDiv);
             chatMessages.scrollTop = chatMessages.scrollHeight;
 
-            // Updated fetch call with CSRF token and better error handling
-            fetch('/api/chat/', {
+            // Call Groq API directly from Javascript to bypass PythonAnywhere firewall!
+            fetch('https://api.groq.com/openai/v1/chat/completions', {
                 method: 'POST',
                 headers: { 
                     'Content-Type': 'application/json',
-                    'X-CSRFToken': getCookie('csrftoken')
+                    'Authorization': `Bearer ${GROQ_API_KEY}`
                 },
-                body: JSON.stringify({ 'message': messageText })
+                body: JSON.stringify({
+                    "model": "llama3-8b-8192",
+                    "messages": [
+                        {"role": "system", "content": "You are a friendly, helpful tour guide for Dinagat Islands in the Philippines. Keep your answers brief, under 3 sentences."},
+                        {"role": "user", "content": messageText}
+                    ]
+                })
             })
             .then(response => {
-                if (!response.ok) throw new Error('Network error');
+                if (!response.ok) throw new Error('API Key missing or invalid!');
                 return response.json();
             })
             .then(data => {
                 document.getElementById('typingIndicator').remove();
                 const botMsgDiv = document.createElement('div');
                 botMsgDiv.className = 'message msg-bot';
-                botMsgDiv.textContent = data.reply;
+                
+                // Extract the AI's reply from Groq's data structure
+                botMsgDiv.textContent = data.choices[0].message.content;
                 chatMessages.appendChild(botMsgDiv);
                 chatMessages.scrollTop = chatMessages.scrollHeight;
             })
@@ -527,42 +472,42 @@
                 document.getElementById('typingIndicator').remove();
                 const errorDiv = document.createElement('div');
                 errorDiv.className = 'message msg-bot';
-                errorDiv.textContent = "Oops! Connection blocked by free server firewall. Try running locally!";
+                errorDiv.textContent = "Oops! Did you remember to paste your GROQ API Key in the code?";
                 chatMessages.appendChild(errorDiv);
             });
         }
 
-        // --- HOTEL RESERVATION LOGIC ---
+        // --- OTHER WIDGET LOGICS (Hotels, Map, etc) ---
+        function getCookie(name) {
+            let cookieValue = null;
+            if (document.cookie && document.cookie !== '') {
+                const cookies = document.cookie.split(';');
+                for (let i = 0; i < cookies.length; i++) {
+                    const cookie = cookies[i].trim();
+                    if (cookie.substring(0, name.length + 1) === (name + '=')) {
+                        cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
+                        break;
+                    }
+                }
+            }
+            return cookieValue;
+        }
+
         function toggleHotel() {
             const panel = document.getElementById('hotelPanel');
             const mapPanel = document.getElementById('mapPanel');
-            
             if(mapPanel.style.display === 'flex') { mapPanel.style.display = 'none'; }
-            
-            if (panel.style.display === 'none' || panel.style.display === '') {
-                panel.style.display = 'flex';
-            } else {
-                panel.style.display = 'none';
-            }
+            panel.style.display = (panel.style.display === 'none' || panel.style.display === '') ? 'flex' : 'none';
         }
 
         function bookHotel(hotelId) {
             const checkIn = document.getElementById(`check-in-${hotelId}`).value;
             const checkOut = document.getElementById(`check-out-${hotelId}`).value;
-
-            if (!checkIn || !checkOut) {
-                alert("Please select both Check-In and Check-Out dates.");
-                return;
-            }
-
+            if (!checkIn || !checkOut) { alert("Please select both Check-In and Check-Out dates."); return; }
             const csrftoken = getCookie('csrftoken');
-
             fetch(`/book/${hotelId}/`, {
                 method: 'POST',
-                headers: { 
-                    'X-CSRFToken': csrftoken, 
-                    'Content-Type': 'application/json'
-                },
+                headers: { 'X-CSRFToken': csrftoken, 'Content-Type': 'application/json' },
                 body: JSON.stringify({ 'check_in': checkIn, 'check_out': checkOut })
             })
             .then(response => response.json())
@@ -570,93 +515,41 @@
                 if (data.status === 'success') {
                     alert('Reservation Confirmed! Enjoy your stay in Dinagat Islands.');
                     document.getElementById(`rooms-left-${hotelId}`).innerText = `Available Rooms: ${data.rooms_left}`;
-                } else {
-                    alert(data.message);
-                }
+                } else { alert(data.message); }
             })
             .catch(error => console.error('Booking Error:', error));
         }
 
-        // --- FREE LEAFLET MAP LOGIC ---
-        let map;
-        let routeLayer;
-
+        let map, routeLayer;
         function initMap() {
             if (!map) {
                 map = L.map('leaflet-map').setView([10.1340, 125.5900], 10);
-                L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
-                    maxZoom: 19,
-                    attribution: '© OpenStreetMap'
-                }).addTo(map);
-
-                L.marker([10.0528, 125.5794]).addTo(map)
-                    .bindPopup("<b>San Jose Port</b><br>Main Ferry Terminal")
-                    .openPopup();
+                L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', { maxZoom: 19, attribution: '© OpenStreetMap' }).addTo(map);
+                L.marker([10.0528, 125.5794]).addTo(map).bindPopup("<b>San Jose Port</b><br>Main Ferry Terminal").openPopup();
             }
         }
 
         function toggleMap() {
             const panel = document.getElementById('mapPanel');
             const hotelPanel = document.getElementById('hotelPanel');
-            
             if(hotelPanel.style.display === 'flex') { hotelPanel.style.display = 'none'; }
-
             if (panel.style.display === 'none' || panel.style.display === '') {
                 panel.style.display = 'flex';
-                setTimeout(() => {
-                    initMap();
-                    map.invalidateSize(); 
-                }, 100);
-            } else {
-                panel.style.display = 'none';
-            }
+                setTimeout(() => { initMap(); map.invalidateSize(); }, 100);
+            } else { panel.style.display = 'none'; }
         }
-
-        // --- NEW DARK MODE LOGIC (Icon Updates Automatically) ---
-        function toggleDarkMode() {
-            document.body.classList.toggle('dark-mode');
-            const btn = document.getElementById('themeToggleBtn');
-            
-            if (document.body.classList.contains('dark-mode')) {
-                localStorage.setItem('theme', 'dark');
-                if (btn) btn.textContent = '☀️';
-            } else {
-                localStorage.setItem('theme', 'light');
-                if (btn) btn.textContent = '🌙';
-            }
-        }
-
-        window.addEventListener('load', function() {
-            const btn = document.getElementById('themeToggleBtn');
-            if (localStorage.getItem('theme') === 'dark') {
-                document.body.classList.add('dark-mode');
-                if (btn) btn.textContent = '☀️';
-            } else {
-                if (btn) btn.textContent = '🌙';
-            }
-        });
 
         function calculateRoute() {
             const startStr = document.getElementById('start-location').value;
             const endStr = document.getElementById('end-location').value;
             if (!endStr) return;
-
-            const startCoords = startStr.split(',');
-            const endCoords = endStr.split(',');
-
+            const startCoords = startStr.split(','), endCoords = endStr.split(',');
             if (routeLayer) map.removeLayer(routeLayer);
-
-            const latlngs = [
-                [startCoords[0], startCoords[1]],
-                [endCoords[0], endCoords[1]]
-            ];
-
-            routeLayer = L.polyline(latlngs, {color: '#ffeb3b', weight: 4, dashArray: '10, 10'}).addTo(map);
+            routeLayer = L.polyline([[startCoords[0], startCoords[1]], [endCoords[0], endCoords[1]]], {color: '#ffeb3b', weight: 4, dashArray: '10, 10'}).addTo(map);
             L.marker([endCoords[0], endCoords[1]]).addTo(map).bindPopup("Destination");
             map.fitBounds(routeLayer.getBounds(), {padding: [20, 20]});
         }
 
-        // --- LOADER ---
         window.addEventListener('load', function() {
             setTimeout(() => {
                 const loader = document.getElementById('gold-loader-overlay');
@@ -664,17 +557,12 @@
                 setTimeout(() => { loader.style.display = 'none'; }, 800);
             }, 500);
         });
-    </script>
 
-    <script>
         if ('serviceWorker' in navigator) {
             window.addEventListener('load', function() {
-                navigator.serviceWorker.register('/service-worker.js')
-                .then(function(registration) {
+                navigator.serviceWorker.register('/service-worker.js').then(function(registration) {
                     console.log('GeoDinagat Offline Engine Online:', registration.scope);
-                }, function(err) {
-                    console.log('ServiceWorker registration failed: ', err);
-                });
+                }, function(err) { console.log('ServiceWorker registration failed: ', err); });
             });
         }
     </script>
