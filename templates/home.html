@@ -1,0 +1,382 @@
+{% extends 'base.html' %}
+{% block content %}
+<style>
+    /* COMPACT HEADER */
+    .compact-header { margin-top: -10px; margin-bottom: 30px; }
+    .display-1-small { font-size: 3.5rem; color: white; }
+    .display-3-small { font-size: 1.8rem; margin-bottom: 0; color: white; }
+
+    /* UNIFORM GRID (3 Columns) */
+    .nature-row { display: grid; grid-template-columns: repeat(3, 1fr); gap: 20px; }
+    @media (max-width: 992px) { .nature-row { grid-template-columns: repeat(2, 1fr); } }
+    @media (max-width: 768px) { .nature-row { grid-template-columns: 1fr; } }
+
+    /* ULTIMATE GLASS ENHANCEMENT */
+    .glass-card {
+        background: rgba(10, 10, 15, 0.15); 
+        backdrop-filter: blur(35px) saturate(180%); -webkit-backdrop-filter: blur(35px) saturate(180%);
+        border-top: 1px solid rgba(255, 255, 255, 0.5); border-left: 1px solid rgba(255, 255, 255, 0.5);
+        border-right: 1px solid rgba(255, 255, 255, 0.15); border-bottom: 1px solid rgba(255, 255, 255, 0.15);
+        background-image: linear-gradient(135deg, rgba(255, 255, 255, 0.05) 0%, rgba(255, 255, 255, 0.02) 50%, rgba(255, 255, 255, 0) 100%);
+        box-shadow: 0 15px 35px rgba(0, 0, 0, 0.4); 
+        border-radius: 24px; padding: 1.5rem; height: 100%;
+        display: flex; flex-direction: column; position: relative; 
+        transition: transform 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275), box-shadow 0.4s ease;
+    }
+    .glass-card:hover { transform: translateY(-10px) scale(1.02); box-shadow: 0 0 30px rgba(255, 235, 59, 0.6), 0 25px 45px rgba(0, 0, 0, 0.6); }
+
+    /* PHOTO PILE */
+    .photo-pile-container { position: relative; height: 180px; margin-top: 10px; margin-bottom: 15px; display: flex; align-items: center; justify-content: center; cursor: pointer; }
+    .pile-item { position: absolute; width: 85%; height: 100%; object-fit: cover; border-radius: 12px; border: 3px solid rgba(255, 255, 255, 0.9); box-shadow: 0 8px 25px rgba(0, 0, 0, 0.5); transition: transform 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275), box-shadow 0.5s ease; }
+    .pile-item:nth-child(1) { transform: rotate(-3deg); z-index: 3; }
+    .pile-item:nth-child(2) { transform: rotate(4deg); z-index: 2; }
+    .pile-item:nth-child(3) { transform: rotate(-6deg) translateY(5px); z-index: 1; }
+    .pile-item:nth-child(n+4) { display: none; }
+    .photo-pile-container:hover .pile-item:nth-child(1) { transform: rotate(-1deg) translateY(-8px) scale(1.03); }
+    .photo-pile-container:hover .pile-item:nth-child(2) { transform: rotate(10deg) translateX(30px); }
+    .photo-pile-container:hover .pile-item:nth-child(3) { transform: rotate(-12deg) translateX(-30px) translateY(8px); }
+
+    /* YELLOW PILL OWNER CONTROLS */
+    .owner-controls { position: absolute; top: -15px; right: 15px; z-index: 10; display: flex; gap: 8px; }
+    .btn-yellow-pill { background: var(--gold-effect); color: black; border-radius: 12px; padding: 6px 15px; font-size: 0.8rem; font-weight: 600; text-decoration: none; transition: 0.3s; border: none; box-shadow: 0 4px 10px rgba(0,0,0,0.3); }
+    .btn-yellow-pill:hover { transform: scale(1.05); box-shadow: 0 5px 15px rgba(255,235,59,0.5); }
+
+    /* HEART LIKES */
+    .like-heart { background: none; border: none; color: white; font-size: 1.3rem; transition: 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275); cursor: pointer; padding: 0; }
+    .like-heart.liked { color: #ffeb3b; text-shadow: 0 0 25px rgba(255, 235, 59, 0.9); transform: scale(1.2) rotate(-10deg); }
+    
+    .download-link { display: inline-block; background: rgba(255, 255, 255, 0.2); border: 1px solid rgba(255, 255, 255, 0.3); border-radius: 50px; padding: 8px 18px; color: white; text-decoration: none; transition: 0.3s ease; }
+    .download-link:hover { background: var(--gold-effect); color: black; box-shadow: 0 0 15px rgba(255, 235, 59, 0.5); }
+
+    /* AESTHETIC LIQUID GLASS CINEMATIC MODAL */
+    .cinematic-modal { max-width: 1100px; }
+    .cinematic-content {
+        background: rgba(30, 30, 40, 0.25);
+        backdrop-filter: blur(40px) saturate(200%);
+        -webkit-backdrop-filter: blur(40px) saturate(200%);
+        border: 1px solid rgba(255, 255, 255, 0.2);
+        border-top: 1px solid rgba(255, 255, 255, 0.5);
+        border-left: 1px solid rgba(255, 255, 255, 0.5);
+        border-radius: 24px; overflow: hidden; 
+        box-shadow: 0 30px 60px rgba(0,0,0,0.6), inset 0 0 20px rgba(255,255,255,0.05);
+    }
+    .media-showcase {
+        background: rgba(0, 0, 0, 0.2); 
+        display: flex; align-items: center; justify-content: center; position: relative; min-height: 500px;
+        border-right: 1px solid rgba(255,255,255,0.1);
+    }
+    .media-showcase img, .media-showcase video {
+        max-height: 80vh; width: 100%; object-fit: contain;
+    }
+    .comment-sidebar {
+        background: rgba(255, 255, 255, 0.05); padding: 30px 25px; display: flex; flex-direction: column; height: 100%; max-height: 80vh; 
+    }
+    .btn-close-custom {
+        position: absolute; top: 15px; right: 20px; z-index: 1050; background: rgba(0,0,0,0.5); color: white; border: 1px solid rgba(255,255,255,0.2); border-radius: 50%; width: 35px; height: 35px; display: flex; align-items: center; justify-content: center; cursor: pointer; transition: 0.3s;
+    }
+    .btn-close-custom:hover { background: var(--gold-effect); color: black; transform: scale(1.1); }
+    
+    /* UPDATED COMMENT BUBBLES WITH DELETE BTN */
+    .comment-thread { flex: 1; overflow-y: auto; padding-right: 10px; display: flex; flex-direction: column; gap: 15px; margin-bottom: 20px; }
+    .comment-bubble { background: rgba(255, 255, 255, 0.1); padding: 12px 18px; border-radius: 16px; position: relative; transition: 0.2s; border: 1px solid rgba(255,255,255,0.1); }
+    .comment-bubble:hover { background: rgba(255, 255, 255, 0.15); }
+    .delete-comment-btn {
+        background: none; border: none; color: rgba(255,255,255,0.4); font-size: 1.2rem; cursor: pointer; padding: 0; line-height: 1; transition: 0.2s;
+    }
+    .delete-comment-btn:hover { color: #ff3d00; transform: scale(1.2); }
+
+    .comment-input-area { display: flex; gap: 10px; margin-top: 15px; border-top: 1px solid rgba(255, 255, 255, 0.1); padding-top: 15px; }
+    .magical-input { flex: 1; background: rgba(255, 255, 255, 0.1); border: 1px solid rgba(255, 255, 255, 0.2); border-radius: 50px; padding: 10px 20px; color: white; outline: none; }
+    .magical-input:focus { border-color: var(--gold-effect); }
+    .send-comment-btn { background: var(--gold-effect); color: black; border: none; border-radius: 50px; padding: 0 20px; font-weight: 600; cursor: pointer; transition: 0.2s; }
+    .send-comment-btn:hover { transform: scale(1.05); box-shadow: 0 0 15px rgba(255, 235, 59, 0.5); }
+    .comment-thread::-webkit-scrollbar { width: 4px; }
+    .comment-thread::-webkit-scrollbar-thumb { background: rgba(255, 255, 255, 0.2); border-radius: 10px; }
+</style>
+
+<div class="text-center compact-header">
+    <h1 class="display-3-small">Welcome to </h1>
+    <h2 class="display-1-small">
+        <span style="color: #ffeb3b; text-shadow: 0 0 25px rgba(255, 235, 59, 0.6);">Dinagat Islands</span>
+    </h2>
+    <p class="small opacity-75 mb-0">Explore pristine lagoons, surreal rock formations, and hidden caves.</p>
+</div>
+
+<div class="nature-row">
+    {% for report in reports %}
+    <div>
+        <div class="glass-card">
+            
+            {% if user == report.author or user.is_staff %}
+            <div class="owner-controls">
+                <button onclick="shareReport('{{ report.title }}', window.location.href)" class="btn-yellow-pill">Share</button>
+                <a href="{% url 'report_update' report.pk %}" class="btn-yellow-pill">Edit</a>
+                <form action="{% url 'report_delete' report.pk %}" method="POST" class="m-0">
+                    {% csrf_token %}<button type="submit" class="btn-yellow-pill" onclick="return confirm('Delete this log?')">Delete</button>
+                </form>
+            </div>
+            {% endif %}
+
+            <div class="photo-pile-container" data-bs-toggle="modal" data-bs-target="#lightboxModal{{ report.pk }}">
+                {% for media in report.additional_media.all %}
+                    {% if media.is_video %}
+                        <video src="{{ media.file.url }}" class="pile-item" muted loop autoplay></video>
+                    {% else %}
+                        <img src="{{ media.file.url }}" class="pile-item">
+                    {% endif %}
+                {% empty %}
+                    <div class="pile-item d-flex flex-column align-items-center justify-content-center" style="background: rgba(0,0,0,0.3); border: 2px dashed rgba(255,255,255,0.4); box-shadow: none;">
+                        <span class="small text-white opacity-50">No Image</span>
+                    </div>
+                {% endfor %}
+            </div>
+
+            <div style="flex-grow: 1;">
+                <h5 class="mb-0 text-truncate">{{ report.title }}</h5>
+                <p class="small mb-2" style="color: #ffeb3b; font-size: 0.8rem;">@{{ report.author.username }}</p>
+                <p class="small opacity-75 mb-0" style="font-size: 0.85rem; line-height: 1.3;">{{ report.description|truncatechars:60 }}</p>
+            </div>
+
+            <div class="d-flex justify-content-between align-items-center mt-3 pt-2 border-top border-white border-opacity-10">
+                <span class="small opacity-50" style="font-size: 0.7rem;">{{ report.created_at|date:"M d" }}</span>
+                
+                <span id="comment-counter-{{ report.pk }}" class="small text-white opacity-75" style="cursor: pointer; font-size: 0.8rem; transition: 0.3s;" data-bs-toggle="modal" data-bs-target="#lightboxModal{{ report.pk }}" onmouseover="this.style.color='#ffeb3b'; this.style.opacity='1'" onmouseout="this.style.color=''; this.style.opacity='0.75'">
+                    Comments: {{ report.comments.count }}
+                </span>
+
+                <div class="d-flex align-items-center gap-2">
+                    <span class="small like-count-{{ report.pk }}" style="color: #ffeb3b; font-size: 0.8rem;">{{ report.likes.count }}</span>
+                    <button class="like-heart {% if user in report.likes.all %}liked{% endif %}" onclick="toggleLike(this, {{ report.pk }})">
+                        ❤
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- CINEMATIC LIGHTBOX MODAL (GLASSMORPHISM EFFECT) -->
+    <div class="modal fade" id="lightboxModal{{ report.pk }}" tabindex="-1" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered cinematic-modal">
+            <div class="modal-content cinematic-content">
+                <button type="button" class="btn-close-custom" data-bs-dismiss="modal">✕</button>
+                
+                <div class="row g-0">
+                    <!-- LEFT SIDE: PURE MEDIA SHOWCASE -->
+                    <div class="col-lg-7 media-showcase">
+                        <div id="carousel{{ report.pk }}" class="carousel slide w-100 h-100">
+                            <div class="carousel-inner h-100">
+                                {% for media in report.additional_media.all %}
+                                    <div class="carousel-item {% if forloop.first %}active{% endif %} h-100">
+                                        <div class="d-flex align-items-center justify-content-center h-100 p-4">
+                                            {% if media.is_video %}
+                                                <video src="{{ media.file.url }}" controls autoplay muted loop style="border-radius: 12px; box-shadow: 0 10px 30px rgba(0,0,0,0.5);"></video>
+                                            {% else %}
+                                                <img src="{{ media.file.url }}" style="border-radius: 12px; box-shadow: 0 10px 30px rgba(0,0,0,0.5);">
+                                            {% endif %}
+                                        </div>
+                                        <div class="position-absolute bottom-0 start-50 translate-middle-x mb-4 z-3">
+                                            <a href="{{ media.file.url }}" download class="download-link" style="font-size: 0.8rem; padding: 6px 15px; background: rgba(0,0,0,0.6); backdrop-filter: blur(5px);">Download High-Res</a>
+                                        </div>
+                                    </div>
+                                {% empty %}
+                                     <div class="carousel-item active h-100 d-flex align-items-center justify-content-center text-white opacity-50">
+                                        <p>No media attached to this log.</p>
+                                     </div>
+                                {% endfor %}
+                            </div>
+                            {% if report.additional_media.count > 1 %}
+                                <button class="carousel-control-prev" data-bs-target="#carousel{{ report.pk }}" data-bs-slide="prev"><span class="carousel-control-prev-icon bg-dark rounded-circle p-2"></span></button>
+                                <button class="carousel-control-next" data-bs-target="#carousel{{ report.pk }}" data-bs-slide="next"><span class="carousel-control-next-icon bg-dark rounded-circle p-2"></span></button>
+                            {% endif %}
+                        </div>
+                    </div>
+
+                    <!-- RIGHT SIDE: DETAILS & COMMENTS -->
+                    <div class="col-lg-5 comment-sidebar">
+                        <div class="mb-4 pb-3 border-bottom border-white border-opacity-10">
+                            <h4 class="text-white mb-1 fw-bold">{{ report.title }}</h4>
+                            <div class="d-flex justify-content-between align-items-center">
+                                <span style="color: var(--gold-effect); font-size: 0.9rem;">@{{ report.author.username }}</span>
+                                <span class="small opacity-50">{{ report.created_at|date:"M d, Y" }}</span>
+                            </div>
+                            <p class="text-white opacity-75 mt-3 mb-0" style="font-size: 0.9rem; line-height: 1.5;">{{ report.description }}</p>
+                        </div>
+
+                        <h6 class="text-white mb-3" style="color: var(--gold-effect) !important; text-transform: uppercase; letter-spacing: 1px; font-size: 0.8rem;">Explorer Logs</h6>
+                        
+                        <div class="comment-thread" id="comment-thread-{{ report.pk }}">
+                            {% for comment in report.comments.all %}
+                                <div class="comment-bubble" id="comment-bubble-{{ comment.id }}">
+                                    <div class="d-flex justify-content-between align-items-start mb-1">
+                                        <div>
+                                            <span class="small text-white fw-bold">{{ comment.author.username }}</span>
+                                            <span class="small opacity-50 ms-2" style="font-size: 0.7rem;">{{ comment.created_at|date:"M d" }}</span>
+                                        </div>
+                                        {% if request.user == comment.author %}
+                                            <button onclick="deleteComment({{ comment.id }}, {{ report.pk }})" class="delete-comment-btn" title="Delete Comment">✕</button>
+                                        {% endif %}
+                                    </div>
+                                    <p class="mb-0 small text-white opacity-75">{{ comment.text }}</p>
+                                </div>
+                            {% empty %}
+                                <p class="small text-white opacity-50 mb-0" id="no-comments-{{ report.pk }}">No logs recorded yet. Be the first!</p>
+                            {% endfor %}
+                        </div>
+
+                        {% if user.is_authenticated %}
+                        <div class="comment-input-area mt-auto pt-3">
+                            <input type="text" id="comment-input-{{ report.pk }}" class="magical-input" placeholder="Share your thoughts..." onkeypress="handleCommentEnter(event, {{ report.pk }})">
+                            <button onclick="postComment({{ report.pk }}, '{{ request.user.username }}')" class="send-comment-btn">Post</button>
+                        </div>
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    {% endfor %}
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+
+<script>
+    // SHARE LOGIC
+    function shareReport(title, url) {
+        if (navigator.share) {
+            navigator.share({
+                title: title,
+                text: 'Check out this amazing spot in Dinagat Islands!',
+                url: url
+            }).catch(console.error);
+        } else {
+            navigator.clipboard.writeText(url);
+            alert('Link copied to clipboard!');
+        }
+    }
+
+    // 1. BULLETPROOF DJANGO SECURITY COOKIE READER
+    function getCookie(name) {
+        let cookieValue = null;
+        if (document.cookie && document.cookie !== '') {
+            const cookies = document.cookie.split(';');
+            for (let i = 0; i < cookies.length; i++) {
+                const cookie = cookies[i].trim();
+                if (cookie.substring(0, name.length + 1) === (name + '=')) {
+                    cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
+                    break;
+                }
+            }
+        }
+        return cookieValue;
+    }
+    const csrftoken = getCookie('csrftoken');
+
+    // 2. THE REACTION LOGIC
+    function toggleLike(btn, reportId) {
+        fetch(`/like/${reportId}/`, {
+            method: 'POST',
+            headers: { 'X-CSRFToken': csrftoken } 
+        })
+        .then(response => {
+            if (!response.ok) throw new Error('Network response was not ok');
+            return response.json();
+        })
+        .then(data => {
+            if (data.liked) {
+                btn.classList.add('liked'); 
+            } else {
+                btn.classList.remove('liked'); 
+            }
+            document.querySelector(`.like-count-${reportId}`).innerText = data.count;
+        })
+        .catch(error => {
+            console.error('Like Error:', error);
+            alert('Security block! Check the Console tab.');
+        });
+    }
+
+    // 3. DELETE COMMENT LOGIC
+    function deleteComment(commentId, reportId) {
+        if (!confirm('Are you sure you want to delete this comment?')) return;
+
+        fetch(`/comment/${commentId}/delete/`, {
+            method: 'POST',
+            headers: { 'X-CSRFToken': csrftoken }
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.status === 'success') {
+                const bubble = document.getElementById(`comment-bubble-${commentId}`);
+                if(bubble) bubble.remove();
+
+                const counterSpan = document.getElementById(`comment-counter-${reportId}`);
+                if (counterSpan) {
+                    counterSpan.innerText = `Comments: ${data.count}`;
+                }
+            } else {
+                alert(data.message || 'Error deleting comment.');
+            }
+        })
+        .catch(error => console.error('Error:', error));
+    }
+
+    // 4. POST COMMENT LOGIC
+    function handleCommentEnter(event, reportId) {
+        if (event.key === 'Enter') postComment(reportId, '{{ request.user.username }}');
+    }
+
+    function postComment(reportId, currentUsername) {
+        const inputField = document.getElementById(`comment-input-${reportId}`);
+        const text = inputField.value.trim();
+        if (!text) return;
+
+        fetch(`/report/${reportId}/comment/`, {
+            method: 'POST',
+            headers: { 
+                'X-CSRFToken': csrftoken, 
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({ 'text': text })
+        })
+        .then(response => {
+            if (!response.ok) throw new Error('Network response was not ok');
+            return response.json();
+        })
+        .then(data => {
+            if (data.status === 'success') {
+                const thread = document.getElementById(`comment-thread-${reportId}`);
+                const noCommentsMsg = document.getElementById(`no-comments-${reportId}`);
+                if (noCommentsMsg) noCommentsMsg.remove();
+
+                const newBubble = document.createElement('div');
+                newBubble.className = 'comment-bubble mt-2';
+                newBubble.id = `comment-bubble-${data.comment_id}`;
+                newBubble.innerHTML = `
+                    <div class="d-flex justify-content-between align-items-start mb-1">
+                        <div>
+                            <span class="small text-white fw-bold">${data.author}</span>
+                            <span class="small opacity-50 ms-2" style="font-size: 0.7rem;">${data.date}</span>
+                        </div>
+                        <button onclick="deleteComment(${data.comment_id}, ${reportId})" class="delete-comment-btn" title="Delete Comment">✕</button>
+                    </div>
+                    <p class="mb-0 small text-white opacity-75">${data.text}</p>
+                `;
+                
+                thread.appendChild(newBubble);
+                inputField.value = '';
+                thread.scrollTop = thread.scrollHeight;
+
+                const counterSpan = document.getElementById(`comment-counter-${reportId}`);
+                if (counterSpan) {
+                    let currentCount = parseInt(counterSpan.innerText.replace(/[^0-9]/g, '')) || 0;
+                    counterSpan.innerText = `Comments: ${currentCount + 1}`;
+                }
+            }
+        })
+        .catch(error => {
+            console.error('Comment Error:', error);
+            alert('Security block! Check the Console tab.');
+        });
+    }
+</script>
+{% endblock %}

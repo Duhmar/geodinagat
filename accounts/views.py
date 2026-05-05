@@ -1,0 +1,258 @@
+from django.shortcuts import render, redirect, get_object_or_404
+from django.contrib.auth.decorators import login_required
+from django.contrib.auth import login, update_session_auth_hash
+from django.contrib.auth.forms import UserCreationForm, PasswordChangeForm
+from .models import Report, Profile, ReportMedia, Comment, Hotel, RoomBooking
+from .forms import ReportForm, UserUpdateForm, ProfileUpdateForm
+from django.contrib import messages
+from django.contrib.admin.views.decorators import staff_member_required
+from django.db.models import Q, Count
+from django.http import JsonResponse
+import json
+
+
+# 1. Home Page
+def home(request):
+    reports = Report.objects.all().order_by('-created_at')
+    hotels = Hotel.objects.all() # Fetching hotels from the database
+    query = request.GET.get('q')
+    
+    if query:
+        reports = reports.filter(
+            Q(title__icontains=query) | 
+            Q(description__icontains=query) |
+            Q(author__username__icontains=query)
+        )
+    
+    # Fixed the dictionary to safely pass both reports and hotels to HTML
+    return render(request, 'home.html', {'reports': reports, 'hotels': hotels})
+
+# 2. Profile Page
+@login_required
+def profile_view(request):
+    user_reports = Report.objects.filter(author=request.user)
+    
+    total_uploads = user_reports.count()
+    total_likes = sum(report.likes.count() for report in user_reports)
+    
+    context = {
+        'total_uploads': total_uploads,
+        'total_likes': total_likes,
+    }
+    return render(request, 'accounts/profile.html', context)
+
+# 3. Signup Logic
+def signup(request):
+    if request.method == 'POST':
+        form = UserCreationForm(request.POST)
+        if form.is_valid():
+            user = form.save()
+            login(request, user)
+            return redirect('report_list')
+    else:
+        form = UserCreationForm()
+    return render(request, 'accounts/signup.html', {'form': form})
+
+# 4. Activity Logs (List)
+@login_required
+def report_list(request):
+    reports = Report.objects.filter(author=request.user).order_by('-created_at')
+    return render(request, 'reports/report_list.html', {'reports': reports})
+
+# 5. Create New Entry
+@login_required
+def report_create(request):
+    if request.method == 'POST':
+        form = ReportForm(request.POST, request.FILES)
+        files = request.FILES.getlist('extra_media')
+        if form.is_valid():
+            report = form.save(commit=False)
+            report.author = request.user
+            report.save()
+            
+            for f in files:
+                is_vid = f.name.lower().endswith(('.mp4', '.mov', '.avi'))
+                ReportMedia.objects.create(report=report, file=f, is_video=is_vid)
+            return redirect('report_list')
+    else:
+        form = ReportForm()
+    return render(request, 'reports/report_form.html', {'form': form, 'title': 'New Activity'})
+
+# 6. Update Entry
+@login_required
+def report_update(request, pk):
+    report = get_object_or_404(Report, pk=pk, author=request.user)
+    if request.method == 'POST':
+        form = ReportForm(request.POST, request.FILES, instance=report)
+        files = request.FILES.getlist('extra_media')
+        if form.is_valid():
+            form.save()
+            
+            for f in files:
+                is_vid = f.name.lower().endswith(('.mp4', '.mov', '.avi'))
+                ReportMedia.objects.create(report=report, file=f, is_video=is_vid)
+            
+            return redirect('report_list')
+    else:
+        form = ReportForm(instance=report)
+    return render(request, 'reports/report_form.html', {'form': form, 'title': 'Edit Activity'})
+
+# 7. Delete Entry
+@login_required
+def report_delete(request, pk):
+    report = get_object_or_404(Report, pk=pk, author=request.user)
+    if request.method == 'POST':
+        report.delete()
+        return redirect('report_list')
+    return render(request, 'reports/report_confirm_delete.html', {'report': report})
+
+# 8. Edit Profile (Fixed with Profile Picture support)
+@login_required
+def edit_profile(request):
+    
+    Profile.objects.get_or_create(user=request.user)
+    
+    if not hasattr(request.user, 'profile'):
+        Profile.objects.get_or_create(user=request.user)
+        
+    if request.method == 'POST':
+        # u_form for username/email, p_form for image
+        u_form = UserUpdateForm(request.POST, instance=request.user)
+        p_form = ProfileUpdateForm(request.POST, request.FILES, instance=request.user.profile)
+        
+        if u_form.is_valid() and p_form.is_valid():
+            u_form.save()
+            p_form.save()
+            messages.success(request, 'Your profile has been updated!')
+            return redirect('profile')
+    else:
+        # Initial state when page loads
+        u_form = UserUpdateForm(instance=request.user)
+        p_form = ProfileUpdateForm(instance=request.user.profile)
+    
+    context = {
+        'u_form': u_form, 
+        'p_form': p_form
+    }
+    return render(request, 'accounts/edit_profile.html', context)
+
+# 9. Change Password
+@login_required
+def change_password(request):
+    if request.method == 'POST':
+        form = PasswordChangeForm(request.user, request.POST)
+        if form.is_valid():
+            user = form.save()
+            update_session_auth_hash(request, user) # Keeps user logged in
+            return redirect('profile')
+    else:
+        form = PasswordChangeForm(request.user)
+    return render(request, 'accounts/change_password.html', {'form': form})
+
+@staff_member_required
+def admin_delete_report(request, pk):
+    report = get_object_or_404(Report, pk=pk)
+    report.delete()
+    messages.success(request, "Post removed by Admin.")
+    return redirect('home')
+
+@login_required
+def toggle_like(request, pk):
+    if request.method == "POST":
+        report = get_object_or_404(Report, pk=pk)
+        
+        if request.user in report.likes.all():
+            report.likes.remove(request.user)
+            liked = False
+        else:
+            report.likes.add(request.user)
+            liked = True
+            
+        return JsonResponse({'liked': liked, 'count': report.likes.count()})
+    return JsonResponse({'error': 'Invalid request'}, status=400)
+
+@login_required
+def add_comment(request, pk):
+    if request.method == 'POST':
+        data = json.loads(request.body)
+        report = get_object_or_404(Report, pk=pk)
+        
+        comment = Comment.objects.create(
+            report=report,
+            author=request.user,
+            text=data.get('text')
+        )
+        
+        return JsonResponse({
+            'status': 'success',
+            'comment_id': comment.id,
+            'author': comment.author.username,
+            'text': comment.text,
+            'date': comment.created_at.strftime("%b %d")
+        })
+    return JsonResponse({'status': 'error'}, status=400)
+
+@login_required
+def delete_comment(request, comment_id):
+    if request.method == 'POST':
+        comment = get_object_or_404(Comment, id=comment_id)
+        report_id = comment.report.id
+        
+        if request.user == comment.author or request.user.is_staff:
+            comment.delete()
+            # Count the remaining comments
+            remaining_count = Comment.objects.filter(report_id=report_id).count()
+            return JsonResponse({'status': 'success', 'count': remaining_count})
+            
+        return JsonResponse({'status': 'error', 'message': 'Unauthorized'}, status=403)
+    return JsonResponse({'status': 'error'}, status=400)
+
+@login_required
+def book_room(request, hotel_id):
+    if request.method == 'POST':
+        import json
+        data = json.loads(request.body)
+        hotel = get_object_or_404(Hotel, id=hotel_id)
+
+        # Check if rooms are actually available to prevent double-booking!
+        if hotel.available_rooms > 0:
+            RoomBooking.objects.create(
+                user=request.user,
+                hotel=hotel,
+                check_in_date=data.get('check_in'),
+                check_out_date=data.get('check_out')
+            )
+            # Subtract 1 from available rooms
+            hotel.available_rooms -= 1
+            hotel.save()
+            
+            return JsonResponse({'status': 'success', 'rooms_left': hotel.available_rooms})
+        else:
+            return JsonResponse({'status': 'error', 'message': 'Sorry, this hotel is fully booked!'})
+    return JsonResponse({'status': 'error'}, status=400)
+
+@login_required
+def analytics_dashboard(request):
+    # 1. Calculate Top 5 Tourist Spots by Engagement (Likes + Comments)
+    top_spots = Report.objects.annotate(
+        total_engagement=Count('comments') + Count('likes')
+    ).order_by('-total_engagement')[:5]
+
+    # Format the data into simple lists for the charts
+    spot_names = [spot.title for spot in top_spots]
+    spot_engagement = [spot.total_engagement for spot in top_spots]
+
+    # 2. Get Hotel Availability Data
+    hotels = Hotel.objects.all()
+    hotel_names = [hotel.name for hotel in hotels]
+    hotel_rooms = [hotel.available_rooms for hotel in hotels]
+
+    # 3. Package the data securely as JSON strings
+    context = {
+        'spot_names': json.dumps(spot_names),
+        'spot_engagement': json.dumps(spot_engagement),
+        'hotel_names': json.dumps(hotel_names),
+        'hotel_rooms': json.dumps(hotel_rooms),
+    }
+    
+    return render(request, 'reports/analytics.html', context)

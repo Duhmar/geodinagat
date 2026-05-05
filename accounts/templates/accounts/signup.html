@@ -1,0 +1,24 @@
+{% extends 'base.html' %}
+{% block content %}
+<div class="row justify-content-center">
+    <div class="col-md-5">
+        <div class="glass-card p-5 text-center">
+            <h2 class="display-6 fw-bold text-white mb-2">Join the Mission</h2>
+            <p class="text-white opacity-75 mb-4">Start documenting Dinagat's beauty</p>
+
+            <form method="POST" class="glass-form text-start">
+                {% csrf_token %}
+                <style>
+                    form p label { color: white; display: block; margin-top: 15px; font-weight: 600; }
+                    form p input { background: rgba(255,255,255,0.1); border: 1px solid rgba(255,255,255,0.2); color: white; border-radius: 12px; padding: 12px; width: 100%; }
+                    .helptext { color: rgba(255,255,255,0.5); font-size: 0.8rem; display: block; }
+                </style>
+                {{ form.as_p }}
+                <div class="mt-4 d-grid">
+                    <button type="submit" class="btn btn-aesthetic btn-lg">Create Explorer Account</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+{% endblock %}

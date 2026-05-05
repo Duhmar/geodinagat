@@ -1,0 +1,566 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Dinagat Islands Tourist spots</title>
+    <!-- Original Poppins Font -->
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600&display=swap" rel="stylesheet">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    
+    <!-- LEAFLET CSS FOR FREE MAP -->
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY=" crossorigin=""/>
+    
+    <style>
+        :root {
+            --gold-effect: #ffeb3b;
+            --body-font: 'Poppins', sans-serif;
+        }
+
+        body {
+            background: linear-gradient(-45deg, #ff3d00, #ffeb3b, #2196f3, #e91e63, #00e676);
+            background-size: 400% 400%;
+            animation: rainbow-flow 20s ease infinite;
+            min-height: 100vh;
+            color: white;
+            font-family: var(--body-font);
+            margin: 0;
+            font-weight: 400;
+        }
+
+        @keyframes rainbow-flow {
+            0% { background-position: 0% 50%; }
+            50% { background-position: 100% 50%; }
+            100% { background-position: 0% 50%; }
+        }
+
+        .navbar-brand {
+            color: var(--gold-effect) !important;
+            text-shadow: 0 0 15px rgba(255, 235, 59, 0.7);
+            text-decoration: none;
+            font-weight: 600;
+        }
+
+        /* TRUE LIQUID GLASS NAVBAR */
+        .navbar-container {
+            background: rgba(255, 255, 255, 0.1);
+            backdrop-filter: blur(30px) saturate(200%);
+            -webkit-backdrop-filter: blur(30px) saturate(200%);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            border-top: 1px solid rgba(255, 255, 255, 0.5);
+            border-left: 1px solid rgba(255, 255, 255, 0.5);
+            border-radius: 50px;
+            padding: 10px 30px;
+            box-shadow: 0 15px 35px rgba(0, 0, 0, 0.2), inset 0 0 15px rgba(255, 255, 255, 0.1);
+            margin-top: 15px;
+            z-index: 1000;
+            position: relative;
+        }
+
+        .search-wrapper { max-width: 350px; width: 100%; position: relative; }
+        .nav-search-input {
+            background: rgba(0, 0, 0, 0.2) !important;
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(255, 255, 255, 0.3) !important;
+            border-radius: 50px !important;
+            color: white !important;
+            padding: 7px 20px !important;
+            font-size: 0.85rem;
+            transition: 0.3s ease;
+        }
+        .nav-search-input:focus {
+            background: rgba(0, 0, 0, 0.4) !important;
+            box-shadow: 0 0 15px rgba(255, 235, 59, 0.4);
+            border-color: var(--gold-effect) !important;
+            outline: none;
+        }
+
+        /* HAMBURGER BUTTON */
+        .hamburger-btn {
+            background: transparent;
+            border: none;
+            color: var(--gold-effect);
+            font-size: 2rem;
+            line-height: 1;
+            padding: 0 10px;
+            cursor: pointer;
+            transition: 0.3s;
+        }
+        .hamburger-btn:hover {
+            text-shadow: 0 0 20px rgba(255, 235, 59, 0.9);
+            transform: scale(1.1);
+        }
+
+        /* LIQUID DROPLET MENU CONTAINER */
+        .glass-dropdown {
+            position: absolute;
+            top: 60px;
+            right: 0;
+            background: rgba(30, 30, 40, 0.15); /* Very light, lets droplets pop */
+            backdrop-filter: blur(40px) saturate(200%);
+            -webkit-backdrop-filter: blur(40px) saturate(200%);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            border-top: 1px solid rgba(255, 255, 255, 0.5);
+            border-left: 1px solid rgba(255, 255, 255, 0.5);
+            border-radius: 24px;
+            padding: 12px; /* Padding creates space around the droplets */
+            min-width: 200px;
+            z-index: 10500; 
+            box-shadow: 0 20px 40px rgba(0,0,0,0.5), inset 0 0 20px rgba(255,255,255,0.05);
+            display: none;
+            flex-direction: column;
+            gap: 8px; /* The small gap between droplets! */
+        }
+
+        /* INDIVIDUAL DROPLET/PILL STYLING */
+        .glass-dropdown a, .glass-dropdown button {
+            color: white;
+            padding: 12px 20px;
+            text-decoration: none;
+            display: block;
+            background: rgba(255, 255, 255, 0.1); /* Frosted droplet background */
+            border: 1px solid rgba(255, 255, 255, 0.15);
+            border-radius: 50px; /* Perfect curved oval/pill shape */
+            text-align: center; /* Centered text */
+            width: 100%;
+            transition: 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+            font-family: var(--body-font);
+            font-size: 0.95rem;
+            box-shadow: 0 4px 10px rgba(0,0,0,0.2);
+        }
+
+        .glass-dropdown a:hover, .glass-dropdown button:hover {
+            background: var(--gold-effect); 
+            color: black !important;
+            font-weight: 600;
+            transform: scale(1.05); /* Slight pop out effect */
+            box-shadow: 0 5px 15px rgba(255, 235, 59, 0.4);
+            border-color: var(--gold-effect);
+        }
+
+        #gold-loader-overlay {
+            position: fixed; top: 0; left: 0; width: 100vw; height: 100vh;
+            background: inherit; backdrop-filter: blur(20px); z-index: 9999;
+            display: flex; justify-content: center; align-items: center;
+        }
+        .gold-spinner {
+            width: 50px; height: 50px; border: 4px solid rgba(255, 255, 255, 0.2);
+            border-top-color: var(--gold-effect); border-radius: 50%;
+            animation: spin 1s linear infinite;
+        }
+        @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
+    </style>
+</head>
+<body>
+    <div id="gold-loader-overlay"><div class="gold-spinner"></div></div>
+
+    <div class="container-fluid px-5">
+        <nav class="navbar navbar-container d-flex w-100 align-items-center">
+            
+            <div style="flex: 1;">
+                <a class="navbar-brand fs-3" href="{% url 'home' %}">
+                    GeoDinagat
+                </a>
+            </div>
+
+            <div class="d-flex justify-content-center" style="flex: 1.5;">
+                {% with url_name=request.resolver_match.url_name %}
+                {% if url_name != 'profile' and url_name != 'edit_profile' %}
+                <form action="{% url 'home' %}" method="GET" class="search-wrapper m-0">
+                    <input type="text" name="q" class="form-control nav-search-input" 
+                           placeholder="Search..." value="{{ request.GET.q }}">
+                    <button type="submit" style="position: absolute; right: 5px; top: 4px; background: var(--gold-effect); border: none; border-radius: 50px; font-size: 0.65rem; padding: 4px 12px; color: black; transition: 0.3s ease; font-weight: 600;">
+                        SEARCH
+                    </button>
+                </form>
+                {% endif %}
+                {% endwith %}
+            </div>
+
+            <div class="d-flex justify-content-end align-items-center" style="flex: 1; position: relative;">
+                <!-- CUSTOM JAVASCRIPT DROPDOWN MENU -->
+                <button id="customHamburgerBtn" class="hamburger-btn" onclick="toggleMenu()">☰</button>
+                
+                <div id="customDropdown" class="glass-dropdown">
+                    <!-- Notice how there are no <hr> lines anymore, just distinct droplets! -->
+                    <a href="{% url 'home' %}">Home</a>
+                    <a href="#" onclick="toggleMap(); toggleMenu(); return false;">Map</a>
+                    
+                    {% if user.is_authenticated %}
+                        <!-- ADDED ANALYTICS LINK HERE -->
+                        <a href="{% url 'analytics_dashboard' %}">Analytics</a>
+                        <a href="{% url 'report_list' %}">Sightings</a>
+                        <a href="#" onclick="toggleHotel(); toggleMenu(); return false;">Hotel</a>
+                        <a href="{% url 'profile' %}">Profile</a>
+                        <form method="POST" action="{% url 'logout' %}" class="m-0 d-flex w-100">
+                            {% csrf_token %}
+                            <button type="submit" class="text-danger fw-bold w-100 mt-2" style="background: rgba(255,0,0,0.1); border-color: rgba(255,0,0,0.3);">Exit</button>
+                        </form>
+                    {% else %}
+                        <a href="{% url 'login' %}">Login</a>
+                    {% endif %}
+                </div>
+            </div>
+
+        </nav>
+    </div>
+
+    <div class="container mt-5">
+        {% block content %}{% endblock %}
+    </div>
+
+    <!-- ========================================== -->
+    <!-- WIDGETS (LIQUID GLASS PANELS) STYLES       -->
+    <!-- ========================================== -->
+    <style>
+        /* TRUE LIQUID GLASS FOR ALL PANELS */
+        .glass-panel-widget {
+            display: none; 
+            background: rgba(20, 20, 30, 0.25); 
+            backdrop-filter: blur(40px) saturate(200%);
+            -webkit-backdrop-filter: blur(40px) saturate(200%);
+            border: 1px solid rgba(255, 255, 255, 0.2); 
+            border-top: 1px solid rgba(255, 255, 255, 0.5); 
+            border-left: 1px solid rgba(255, 255, 255, 0.5); 
+            border-radius: 28px; 
+            box-shadow: 0 30px 60px rgba(0, 0, 0, 0.5), inset 0 0 25px rgba(255, 255, 255, 0.05); 
+            flex-direction: column; 
+            overflow: hidden;
+            animation: popUpCenter 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+        }
+        
+        @keyframes popUpCenter { 
+            from { opacity: 0; transform: translate(-50%, -50%) scale(0.8); } 
+            to { opacity: 1; transform: translate(-50%, -50%) scale(1); } 
+        }
+
+        .fullscreen-panel {
+            position: fixed;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            width: 90vw !important;
+            height: 90vh !important;
+            z-index: 10000;
+        }
+
+        .centered-panel {
+            position: fixed;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            width: 450px;
+            max-height: 85vh;
+            z-index: 10000;
+        }
+        
+        .widget-header { 
+            background: rgba(0, 0, 0, 0.2); 
+            padding: 15px 25px; 
+            display: flex; 
+            justify-content: space-between; 
+            align-items: center; 
+            border-bottom: 1px solid rgba(255, 255, 255, 0.1); 
+        }
+        .widget-title { color: var(--gold-effect); margin: 0; font-size: 1.1rem; text-shadow: 0 0 10px rgba(255, 235, 59, 0.5); }
+        
+        /* RESTORED CHAT SPECIFICS */
+        .magical-chat-widget { position: fixed; bottom: 30px; left: 30px; z-index: 9999; font-family: var(--body-font); }
+        .chat-panel { 
+            width: 350px; height: 500px; transform: none; position: relative; bottom: 15px; 
+            animation: popUp 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275); transform-origin: bottom left; 
+        }
+        @keyframes popUp { from { opacity: 0; transform: scale(0.5); } to { opacity: 1; transform: scale(1); } }
+        
+        .chat-messages { flex: 1; padding: 15px; overflow-y: auto; display: flex; flex-direction: column; gap: 10px; }
+        .message { max-width: 80%; padding: 10px 15px; border-radius: 18px; font-size: 0.85rem; line-height: 1.4; }
+        .msg-bot { background: rgba(255, 255, 255, 0.1); color: white; align-self: flex-start; border-bottom-left-radius: 4px; border: 1px solid rgba(255,255,255,0.1); }
+        .msg-user { background: var(--gold-effect); color: black; align-self: flex-end; border-bottom-right-radius: 4px; box-shadow: 0 5px 15px rgba(255, 235, 59, 0.3); }
+        
+        .chat-input-area { padding: 15px; background: rgba(0, 0, 0, 0.2); border-top: 1px solid rgba(255, 255, 255, 0.1); display: flex; gap: 10px; }
+        .chat-input { flex: 1; background: rgba(255, 255, 255, 0.15); border: 1px solid rgba(255, 255, 255, 0.3); border-radius: 50px; padding: 8px 15px; color: white; font-size: 0.85rem; outline: none; transition: 0.3s; }
+        .chat-input:focus { border-color: var(--gold-effect); background: rgba(0,0,0,0.3); }
+        .chat-send-btn { background: var(--gold-effect); border: none; border-radius: 50%; width: 38px; height: 38px; color: black; cursor: pointer; display: flex; align-items: center; justify-content: center; transition: 0.2s; box-shadow: 0 0 10px rgba(255, 235, 59, 0.4);}
+        .widget-toggle-btn {
+            background: rgba(20, 20, 20, 0.6); backdrop-filter: blur(15px); -webkit-backdrop-filter: blur(15px);
+            border: 2px solid var(--gold-effect); color: var(--gold-effect);
+            width: 60px; height: 60px; border-radius: 50%; font-size: 0.9rem; text-transform: uppercase;
+            cursor: pointer; box-shadow: 0 5px 20px rgba(0, 0, 0, 0.5), 0 0 15px rgba(255, 235, 59, 0.3);
+            transition: 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275); display: flex; align-items: center; justify-content: center;
+        }
+        .widget-toggle-btn:hover { transform: scale(1.1); box-shadow: 0 10px 25px rgba(0, 0, 0, 0.6), 0 0 25px rgba(255, 235, 59, 0.6); }
+
+        /* Map Specifics */
+        .map-container { flex: 1; padding: 15px; position: relative; display: flex; flex-direction: column; gap: 15px;}
+        .routing-controls { background: rgba(0,0,0,0.25); border: 1px solid rgba(255,255,255,0.1); padding: 15px; border-radius: 18px; display: flex; flex-direction: row; gap: 15px; align-items: center; justify-content: center;}
+        .route-select { background: rgba(255,255,255,0.15); border: 1px solid rgba(255,255,255,0.3); color: white; border-radius: 12px; padding: 10px; font-family: var(--body-font); font-size: 0.9rem; flex: 1; outline: none;}
+        .route-select option { background: #1a1a1a; color: white; }
+        .route-btn { background: var(--gold-effect); color: black; border: none; border-radius: 12px; padding: 10px 25px; font-weight: 600; cursor: pointer; transition: 0.3s;}
+        .route-btn:hover { box-shadow: 0 0 15px rgba(255,235,59,0.5); transform: translateY(-2px); }
+        
+        /* Hotel specific styles */
+        .hotel-card { background: rgba(0,0,0,0.25); padding: 20px; border-radius: 20px; border: 1px solid rgba(255,255,255,0.15); margin-bottom: 15px; transition: 0.3s; }
+        .hotel-card:hover { background: rgba(0,0,0,0.4); border-color: rgba(255,255,255,0.3); transform: translateY(-3px); }
+        .btn-glass-sm { background: var(--gold-effect); color: black; border-radius: 12px; padding: 8px 15px; font-size: 0.85rem; font-weight: 600; cursor: pointer; border: none; transition: 0.3s; box-shadow: 0 5px 15px rgba(255,235,59,0.3);}
+        .btn-glass-sm:hover { transform: scale(1.02); box-shadow: 0 5px 20px rgba(255,235,59,0.6); }
+    </style>
+
+    <!-- RESTORED LEFT SIDE: CHAT WIDGET -->
+    <div class="magical-chat-widget">
+        <div class="glass-panel-widget chat-panel" id="chatPanel" style="display: none;">
+            <div class="widget-header">
+                <h4 class="widget-title">Island Guide</h4>
+                <button onclick="toggleChat()" style="background: none; border: none; color: white; cursor: pointer; font-size: 1.4rem; transition: 0.2s;">×</button>
+            </div>
+            <div class="chat-messages" id="chatMessages">
+                <div class="message msg-bot">Hello explorer! I am your GeoDinagat guide. How can I help you today?</div>
+            </div>
+            <div class="chat-input-area">
+                <input type="text" id="chatInput" class="chat-input" placeholder="Ask me anything..." onkeypress="handleEnter(event)">
+                <button class="chat-send-btn" onclick="sendMessage()">></button>
+            </div>
+        </div>
+        <button class="widget-toggle-btn" id="chatToggleBtn" onclick="toggleChat()">Chat</button>
+    </div>
+
+    <!-- HOTEL RESERVATION PANEL (Centered Liquid Glass) -->
+    <div class="glass-panel-widget centered-panel" id="hotelPanel" style="display: none;">
+        <div class="widget-header">
+            <h4 class="widget-title">Island Accommodations</h4>
+            <button onclick="toggleHotel()" style="background: none; border: none; color: white; cursor: pointer; font-size: 1.4rem; transition: 0.2s;">×</button>
+        </div>
+        <div style="flex: 1; padding: 20px; overflow-y: auto; display: flex; flex-direction: column;">
+            {% for hotel in hotels %}
+            <div class="hotel-card">
+                <h5 style="color: var(--gold-effect); margin-bottom: 5px; font-weight: 600;">{{ hotel.name }}</h5>
+                <p class="small text-white opacity-75 mb-2">{{ hotel.location }} | ₱{{ hotel.price_per_night }}/night</p>
+                <p class="small mb-3 fw-bold" style="color: #00e676;" id="rooms-left-{{ hotel.id }}">Available Rooms: {{ hotel.available_rooms }}</p>
+                
+                {% if user.is_authenticated %}
+                    <div class="d-flex gap-2 mb-3">
+                        <input type="date" id="check-in-{{ hotel.id }}" class="chat-input" title="Check-in">
+                        <input type="date" id="check-out-{{ hotel.id }}" class="chat-input" title="Check-out">
+                    </div>
+                    <button onclick="bookHotel({{ hotel.id }})" class="btn-glass-sm w-100 text-center">Book Now</button>
+                {% else %}
+                    <p class="small text-warning mb-0">Please login to book a room.</p>
+                {% endif %}
+            </div>
+            {% empty %}
+                <p class="text-white opacity-50 text-center mt-4">No hotels available right now. Please add some from the Admin Panel.</p>
+            {% endfor %}
+        </div>
+    </div>
+
+    <!-- FULL SCREEN LEAFLET MAP PANEL -->
+    <div class="glass-panel-widget fullscreen-panel" id="mapPanel" style="display: none;">
+        <div class="widget-header">
+            <h4 class="widget-title">Island Route Map</h4>
+            <button onclick="toggleMap()" style="background: none; border: none; color: white; cursor: pointer; font-size: 1.4rem; transition: 0.2s;">×</button>
+        </div>
+        <div class="map-container">
+            <div class="routing-controls">
+                <select id="start-location" class="route-select">
+                    <option value="10.0528,125.5794">San Jose Port (Entry)</option>
+                </select>
+                <select id="end-location" class="route-select">
+                    <option value="">Select Destination...</option>
+                    <option value="10.1558,125.6128">Lake Bababu</option>
+                    <option value="10.0211,125.5432">Pangabangan Island</option>
+                    <option value="9.9876,125.6012">Duyos Beach</option>
+                    <option value="10.1890,125.6345">Bitaug Beach</option>
+                    <option value="9.9455,125.5960">Tagbirayan Beach</option>
+                    <option value="10.0384,125.5861">PBMA Shrine</option>
+                </select>
+                <button class="route-btn" onclick="calculateRoute()">Show Route</button>
+            </div>
+            <div id="leaflet-map" style="width: 100%; height: 100%; border-radius: 18px; z-index: 1; box-shadow: inset 0 0 20px rgba(0,0,0,0.5);"></div>
+        </div>
+    </div>
+
+    <!-- BOOTSTRAP JS -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+
+    <!-- LEAFLET JS SCRIPT -->
+    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js" integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo=" crossorigin=""></script>
+
+    <!-- WIDGET SCRIPTS -->
+    <script>
+        // --- CUSTOM HAMBURGER MENU LOGIC ---
+        function toggleMenu() {
+            const menu = document.getElementById('customDropdown');
+            if (menu.style.display === 'none' || menu.style.display === '') {
+                menu.style.display = 'flex';
+            } else {
+                menu.style.display = 'none';
+            }
+        }
+
+        document.addEventListener('click', function(event) {
+            const menu = document.getElementById('customDropdown');
+            const btn = document.getElementById('customHamburgerBtn');
+            if (!menu.contains(event.target) && event.target !== btn) {
+                menu.style.display = 'none';
+            }
+        });
+
+        // --- CHAT LOGIC ---
+        function toggleChat() {
+            const panel = document.getElementById('chatPanel');
+            const btn = document.getElementById('chatToggleBtn');
+            if (panel.style.display === 'none' || panel.style.display === '') {
+                panel.style.display = 'flex';
+                btn.style.transform = 'scale(0.8)';
+            } else {
+                panel.style.display = 'none';
+                btn.style.transform = 'scale(1)';
+            }
+        }
+        function handleEnter(event) { if (event.key === 'Enter') sendMessage(); }
+        function sendMessage() {
+            const inputField = document.getElementById('chatInput');
+            const messageText = inputField.value.trim();
+            if (messageText === '') return;
+            const chatMessages = document.getElementById('chatMessages');
+
+            const userMsgDiv = document.createElement('div');
+            userMsgDiv.className = 'message msg-user';
+            userMsgDiv.textContent = messageText;
+            chatMessages.appendChild(userMsgDiv);
+            inputField.value = '';
+            chatMessages.scrollTop = chatMessages.scrollHeight;
+
+            setTimeout(() => {
+                const botMsgDiv = document.createElement('div');
+                botMsgDiv.className = 'message msg-bot';
+                botMsgDiv.textContent = 'I am your GeoDinagat guide! Feel free to explore the Map or book a Hotel from the top-right menu.';
+                chatMessages.appendChild(botMsgDiv);
+                chatMessages.scrollTop = chatMessages.scrollHeight;
+            }, 1000);
+        }
+
+        // --- HOTEL RESERVATION LOGIC ---
+        function toggleHotel() {
+            const panel = document.getElementById('hotelPanel');
+            const mapPanel = document.getElementById('mapPanel');
+            
+            if(mapPanel.style.display === 'flex') { mapPanel.style.display = 'none'; }
+            
+            if (panel.style.display === 'none' || panel.style.display === '') {
+                panel.style.display = 'flex';
+            } else {
+                panel.style.display = 'none';
+            }
+        }
+
+        function bookHotel(hotelId) {
+            const checkIn = document.getElementById(`check-in-${hotelId}`).value;
+            const checkOut = document.getElementById(`check-out-${hotelId}`).value;
+
+            if (!checkIn || !checkOut) {
+                alert("Please select both Check-In and Check-Out dates.");
+                return;
+            }
+
+            const csrftoken = document.cookie.split('; ').find(row => row.startsWith('csrftoken=')).split('=')[1];
+
+            fetch(`/book/${hotelId}/`, {
+                method: 'POST',
+                headers: { 
+                    'X-CSRFToken': csrftoken, 
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({ 'check_in': checkIn, 'check_out': checkOut })
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.status === 'success') {
+                    alert('Reservation Confirmed! Enjoy your stay in Dinagat Islands.');
+                    document.getElementById(`rooms-left-${hotelId}`).innerText = `Available Rooms: ${data.rooms_left}`;
+                } else {
+                    alert(data.message);
+                }
+            })
+            .catch(error => console.error('Booking Error:', error));
+        }
+
+        // --- FREE LEAFLET MAP LOGIC ---
+        let map;
+        let routeLayer;
+
+        function initMap() {
+            if (!map) {
+                map = L.map('leaflet-map').setView([10.1340, 125.5900], 10);
+                L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+                    maxZoom: 19,
+                    attribution: '© OpenStreetMap'
+                }).addTo(map);
+
+                L.marker([10.0528, 125.5794]).addTo(map)
+                    .bindPopup("<b>San Jose Port</b><br>Main Ferry Terminal")
+                    .openPopup();
+            }
+        }
+
+        function toggleMap() {
+            const panel = document.getElementById('mapPanel');
+            const hotelPanel = document.getElementById('hotelPanel');
+            
+            if(hotelPanel.style.display === 'flex') { hotelPanel.style.display = 'none'; }
+
+            if (panel.style.display === 'none' || panel.style.display === '') {
+                panel.style.display = 'flex';
+                setTimeout(() => {
+                    initMap();
+                    map.invalidateSize(); 
+                }, 100);
+            } else {
+                panel.style.display = 'none';
+            }
+        }
+
+        function calculateRoute() {
+            const startStr = document.getElementById('start-location').value;
+            const endStr = document.getElementById('end-location').value;
+            if (!endStr) return;
+
+            const startCoords = startStr.split(',');
+            const endCoords = endStr.split(',');
+
+            if (routeLayer) map.removeLayer(routeLayer);
+
+            const latlngs = [
+                [startCoords[0], startCoords[1]],
+                [endCoords[0], endCoords[1]]
+            ];
+
+            routeLayer = L.polyline(latlngs, {color: '#ffeb3b', weight: 4, dashArray: '10, 10'}).addTo(map);
+            L.marker([endCoords[0], endCoords[1]]).addTo(map).bindPopup("Destination");
+            map.fitBounds(routeLayer.getBounds(), {padding: [20, 20]});
+        }
+
+        // --- LOADER ---
+        window.addEventListener('load', function() {
+            setTimeout(() => {
+                const loader = document.getElementById('gold-loader-overlay');
+                loader.style.opacity = '0';
+                setTimeout(() => { loader.style.display = 'none'; }, 800);
+            }, 500);
+        });
+    </script>
+
+    <!-- ADDED: PWA Service Worker Registration -->
+    <script>
+        if ('serviceWorker' in navigator) {
+            window.addEventListener('load', function() {
+                navigator.serviceWorker.register('/service-worker.js')
+                .then(function(registration) {
+                    console.log('GeoDinagat Offline Engine Online:', registration.scope);
+                }, function(err) {
+                    console.log('ServiceWorker registration failed: ', err);
+                });
+            });
+        }
+    </script>
+</body>
+</html>

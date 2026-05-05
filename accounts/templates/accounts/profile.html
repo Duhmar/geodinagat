@@ -1,0 +1,144 @@
+{% extends 'base.html' %}
+{% block content %}
+<style>
+    .glass-panel {
+        background: rgba(20, 20, 20, 0.3);
+        backdrop-filter: blur(25px);
+        -webkit-backdrop-filter: blur(25px);
+        border: 1px solid rgba(255, 255, 255, 0.15);
+        border-top: 1px solid rgba(255, 255, 255, 0.4);
+        border-left: 1px solid rgba(255, 255, 255, 0.4);
+        box-shadow: 0 20px 40px rgba(0, 0, 0, 0.5);
+        border-radius: 30px;
+        padding: 2.5rem;
+        height: 100%;
+        color: white;
+    }
+
+    .profile-img {
+        width: 160px;
+        height: 160px;
+        object-fit: cover;
+        border-radius: 50%;
+        border: 4px solid var(--gold-effect);
+        box-shadow: 0 0 20px rgba(255, 235, 59, 0.4);
+        margin-bottom: 1.5rem;
+    }
+
+    /* ACTIVITY STATS */
+    .stat-box {
+        background: rgba(0, 0, 0, 0.3);
+        border: 1px solid rgba(255, 255, 255, 0.1);
+        border-radius: 20px;
+        padding: 15px;
+        text-align: center;
+        flex: 1;
+    }
+    .stat-number { font-size: 2rem; font-weight: 800; color: #ffeb3b; line-height: 1; }
+    .stat-label { font-size: 0.75rem; text-transform: uppercase; letter-spacing: 1px; opacity: 0.7; }
+
+    /* DETAIL ROWS */
+    .detail-label {
+        color: #ffeb3b;
+        font-size: 0.85rem;
+        font-weight: 600;
+        text-transform: uppercase;
+        letter-spacing: 1px;
+        margin-bottom: 2px;
+    }
+    .detail-value {
+        font-size: 1.1rem;
+        font-weight: 300;
+        margin-bottom: 20px;
+        border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+        padding-bottom: 8px;
+    }
+
+    .btn-gold {
+        background: var(--gold-effect); color: black !important; font-weight: 800;
+        border-radius: 50px; padding: 12px 35px; border: none; transition: 0.3s ease;
+        text-transform: uppercase; letter-spacing: 1px; text-decoration: none;
+        display: inline-block; box-shadow: 0 4px 15px rgba(255, 235, 59, 0.3);
+    }
+    .btn-gold:hover { transform: translateY(-3px); box-shadow: 0 8px 25px rgba(255, 235, 59, 0.6); }
+</style>
+
+<div class="row g-4 mt-2 mb-5">
+    
+    <div class="col-lg-4">
+        <div class="glass-panel text-center">
+            {% if user.profile.image %}
+                <img src="{{ user.profile.image.url }}" class="profile-img">
+            {% else %}
+                <div class="profile-img mx-auto d-flex align-items-center justify-content-center" style="background: rgba(0,0,0,0.5); font-size: 4rem;">👤</div>
+            {% endif %}
+            
+            <h2 class="fw-bold mb-0">{{ user.username }}</h2>
+            <p class="opacity-75 mb-4">{{ user.email }}</p>
+
+            <a href="{% url 'edit_profile' %}" class="btn-gold w-100 mb-4">Edit Profile</a>
+
+            <hr style="border-color: rgba(255,255,255,0.2);">
+            
+            <h5 class="fw-bold text-start mt-4 mb-3">Activity Summary</h5>
+            <div class="d-flex gap-3">
+                <div class="stat-box">
+                    <div class="stat-number">{{ total_uploads }}</div>
+                    <div class="stat-label mt-2">Sightings</div>
+                </div>
+                <div class="stat-box">
+                    <div class="stat-number">{{ total_likes }}</div>
+                    <div class="stat-label mt-2">Total Likes</div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="col-lg-8">
+        <div class="glass-panel">
+            <h3 class="fw-bold mb-4" style="color: #ffeb3b; text-shadow: 0 0 15px rgba(255,235,59,0.4);">Explorer Details</h3>
+            
+            <div class="row">
+                <div class="col-md-6">
+                    <div class="detail-label">Full Name</div>
+                    <div class="detail-value">{% if user.first_name %}{{ user.first_name }} {{ user.last_name }}{% else %}<span class="opacity-50">Not set</span>{% endif %}</div>
+                </div>
+                <div class="col-md-6">
+                    <div class="detail-label">Date of Birth</div>
+                    <div class="detail-value">{% if user.profile.dob %}{{ user.profile.dob|date:"F d, Y" }}{% else %}<span class="opacity-50">Not set</span>{% endif %}</div>
+                </div>
+                
+                <div class="col-md-4">
+                    <div class="detail-label">Age</div>
+                    <div class="detail-value">{% if user.profile.age %}{{ user.profile.age }} years{% else %}<span class="opacity-50">--</span>{% endif %}</div>
+                </div>
+                <div class="col-md-4">
+                    <div class="detail-label">Sex</div>
+                    <div class="detail-value">{{ user.profile.sex|default:'<span class="opacity-50">Not set</span>'|safe }}</div>
+                </div>
+                <div class="col-md-4">
+                    <div class="detail-label">Civil Status</div>
+                    <div class="detail-value">{{ user.profile.civil_status|default:'<span class="opacity-50">Not set</span>'|safe }}</div>
+                </div>
+
+                <div class="col-md-6">
+                    <div class="detail-label">Phone Number</div>
+                    <div class="detail-value">{{ user.profile.phone_number|default:'<span class="opacity-50">Not set</span>'|safe }}</div>
+                </div>
+                <div class="col-md-6">
+                    <div class="detail-label">Joined Dinagat</div>
+                    <div class="detail-value">{{ user.date_joined|date:"F Y" }}</div>
+                </div>
+
+                <div class="col-12">
+                    <div class="detail-label">Home Address</div>
+                    <div class="detail-value" style="border-bottom: none;">
+                        {{ user.profile.address|default:'<span class="opacity-50">Address not provided yet.</span>'|safe }}
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+</div>
+{% endblock %}

@@ -1,0 +1,96 @@
+{% extends 'base.html' %}
+{% block content %}
+<style>
+    .chart-container {
+        position: relative;
+        height: 350px;
+        width: 100%;
+    }
+    .glass-card {
+        background: rgba(10, 10, 15, 0.15); 
+        backdrop-filter: blur(35px) saturate(180%); -webkit-backdrop-filter: blur(35px) saturate(180%);
+        border: 1px solid rgba(255, 255, 255, 0.2); border-top: 1px solid rgba(255, 255, 255, 0.5);
+        border-radius: 24px; padding: 1.5rem; height: 100%;
+        box-shadow: 0 15px 35px rgba(0, 0, 0, 0.4), inset 0 0 15px rgba(255,255,255,0.05); 
+    }
+</style>
+
+<div class="text-center mb-5 animate-fadeInScale">
+    <h1 class="display-4 text-white" style="text-shadow: 0 0 20px rgba(255, 235, 59, 0.6); font-weight: 300;">GeoDinagat Analytics</h1>
+    <p class="text-white opacity-75">Real-time tourism and accommodation tracking.</p>
+</div>
+
+<div class="row g-4">
+    <!-- Top Spots Bar Chart -->
+    <div class="col-md-7">
+        <div class="glass-card animate-zoomIn">
+            <h5 class="text-white mb-4" style="color: var(--gold-effect) !important;">Most Popular Locations</h5>
+            <div class="chart-container">
+                <canvas id="spotsChart"></canvas>
+            </div>
+        </div>
+    </div>
+
+    <!-- Hotel Rooms Doughnut Chart -->
+    <div class="col-md-5">
+        <div class="glass-card animate-zoomIn" style="animation-delay: 0.2s;">
+            <h5 class="text-white mb-4" style="color: var(--gold-effect) !important;">Hotel Room Availability</h5>
+            <div class="chart-container">
+                <canvas id="hotelsChart"></canvas>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Load Chart.js Library -->
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
+<script>
+    // Safely parse the JSON data from Django
+    const spotNames = JSON.parse('{{ spot_names|safe }}');
+    const spotData = JSON.parse('{{ spot_engagement|safe }}');
+    
+    const hotelNames = JSON.parse('{{ hotel_names|safe }}');
+    const hotelData = JSON.parse('{{ hotel_rooms|safe }}');
+
+    // Chart global defaults for aesthetic glass theme
+    Chart.defaults.color = 'rgba(255, 255, 255, 0.7)';
+    Chart.defaults.font.family = "'Poppins', sans-serif";
+
+    // 1. Render Top Spots Chart
+    new Chart(document.getElementById('spotsChart'), {
+        type: 'bar',
+        data: {
+            labels: spotNames,
+            datasets: [{
+                label: 'Total Engagement (Likes + Comments)',
+                data: spotData,
+                backgroundColor: 'rgba(255, 235, 59, 0.6)', // Gold effect
+                borderColor: 'rgba(255, 235, 59, 1)',
+                borderWidth: 2,
+                borderRadius: 8
+            }]
+        },
+        options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            scales: { y: { beginAtZero: true, grid: { color: 'rgba(255,255,255,0.1)' } }, x: { grid: { display: false } } }
+        }
+    });
+
+    // 2. Render Hotel Availability Chart
+    new Chart(document.getElementById('hotelsChart'), {
+        type: 'doughnut',
+        data: {
+            labels: hotelNames,
+            datasets: [{
+                data: hotelData,
+                backgroundColor: ['#ff3d00', '#ffeb3b', '#2196f3', '#e91e63', '#00e676'],
+                borderWidth: 0,
+                hoverOffset: 10
+            }]
+        },
+        options: { responsive: true, maintainAspectRatio: false, cutout: '70%' }
+    });
+</script>
+{% endblock %}
