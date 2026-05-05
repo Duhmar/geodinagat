@@ -129,6 +129,28 @@
             box-shadow: 0 4px 10px rgba(0,0,0,0.2);
         }
 
+        body.dark-mode {
+            background: linear-gradient(-45deg, #0f172a, #1e1e2f, #0f3460, #16213e);
+            color: #e2e8f0;
+        }
+        .dark-mode .glass-panel-widget, .dark-mode .glass-dropdown, .dark-mode .navbar-container {
+            background: rgba(10, 10, 15, 0.4);
+            border-color: rgba(255, 255, 255, 0.1);
+        }
+        .dark-mode .hotel-card { background: rgba(0,0,0,0.5); }
+
+        /* --- MOBILE UI FIXES --- */
+        @media (max-width: 768px) {
+            .centered-panel, .chat-panel {
+                width: 90vw !important; /* Shrinks to fit mobile screens */
+                max-width: 400px;
+                left: 50% !important;
+                transform: translateX(-50%) !important;
+            }
+            .magical-chat-widget { bottom: 15px; left: 50%; transform: translateX(-50%); width: 100%; text-align: center; }
+            .widget-toggle-btn { margin: 0 auto; }
+        }
+
         .glass-dropdown a:hover, .glass-dropdown button:hover {
             background: var(--gold-effect); 
             color: black !important;
@@ -184,6 +206,7 @@
                 <div id="customDropdown" class="glass-dropdown">
                     <!-- Notice how there are no <hr> lines anymore, just distinct droplets! -->
                     <a href="{% url 'home' %}">Home</a>
+                    <button onclick="toggleDarkMode()">🌙 Dark Mode</button>
                     <a href="#" onclick="toggleMap(); toggleMenu(); return false;">Map</a>
                     
                     {% if user.is_authenticated %}
@@ -305,15 +328,14 @@
         .btn-glass-sm:hover { transform: scale(1.02); box-shadow: 0 5px 20px rgba(255,235,59,0.6); }
     </style>
 
-    <!-- RESTORED LEFT SIDE: CHAT WIDGET -->
     <div class="magical-chat-widget">
         <div class="glass-panel-widget chat-panel" id="chatPanel" style="display: none;">
             <div class="widget-header">
-                <h4 class="widget-title">Island Guide</h4>
+                <h4 class="widget-title">Island AI Guide</h4>
                 <button onclick="toggleChat()" style="background: none; border: none; color: white; cursor: pointer; font-size: 1.4rem; transition: 0.2s;">×</button>
             </div>
             <div class="chat-messages" id="chatMessages">
-                <div class="message msg-bot">Hello explorer! I am your GeoDinagat guide. How can I help you today?</div>
+                <div class="message msg-bot">Hello explorer! I am powered by Llama 3. Ask me anything about Dinagat!</div>
             </div>
             <div class="chat-input-area">
                 <input type="text" id="chatInput" class="chat-input" placeholder="Ask me anything..." onkeypress="handleEnter(event)">
@@ -423,6 +445,7 @@
             if (messageText === '') return;
             const chatMessages = document.getElementById('chatMessages');
 
+            // 1. Show the user's message
             const userMsgDiv = document.createElement('div');
             userMsgDiv.className = 'message msg-user';
             userMsgDiv.textContent = messageText;
@@ -430,13 +453,39 @@
             inputField.value = '';
             chatMessages.scrollTop = chatMessages.scrollHeight;
 
-            setTimeout(() => {
+            // 2. Show a temporary "typing..." indicator
+            const typingDiv = document.createElement('div');
+            typingDiv.className = 'message msg-bot';
+            typingDiv.id = 'typingIndicator';
+            typingDiv.textContent = 'Thinking...';
+            chatMessages.appendChild(typingDiv);
+            chatMessages.scrollTop = chatMessages.scrollHeight;
+
+            // 3. Send the message to your Django backend via fetch
+            fetch('/api/chat/', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ 'message': messageText })
+            })
+            .then(response => response.json())
+            .then(data => {
+                // Remove the "Thinking..." indicator
+                document.getElementById('typingIndicator').remove();
+                
+                // Show the real AI response!
                 const botMsgDiv = document.createElement('div');
                 botMsgDiv.className = 'message msg-bot';
-                botMsgDiv.textContent = 'I am your GeoDinagat guide! Feel free to explore the Map or book a Hotel from the top-right menu.';
+                botMsgDiv.textContent = data.reply;
                 chatMessages.appendChild(botMsgDiv);
                 chatMessages.scrollTop = chatMessages.scrollHeight;
-            }, 1000);
+            })
+            .catch(error => {
+                document.getElementById('typingIndicator').remove();
+                const errorDiv = document.createElement('div');
+                errorDiv.className = 'message msg-bot';
+                errorDiv.textContent = "Oops! Connection lost.";
+                chatMessages.appendChild(errorDiv);
+            });
         }
 
         // --- HOTEL RESERVATION LOGIC ---
@@ -518,6 +567,21 @@
                 panel.style.display = 'none';
             }
         }
+
+        function toggleDarkMode() {
+            document.body.classList.toggle('dark-mode');
+            if (document.body.classList.contains('dark-mode')) {
+                localStorage.setItem('theme', 'dark');
+            } else {
+                localStorage.setItem('theme', 'light');
+            }
+        }
+
+        window.addEventListener('load', function() {
+            if (localStorage.getItem('theme') === 'dark') {
+                document.body.classList.add('dark-mode');
+            }
+        });
 
         function calculateRoute() {
             const startStr = document.getElementById('start-location').value;
