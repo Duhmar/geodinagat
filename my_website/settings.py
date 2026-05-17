@@ -20,7 +20,8 @@ INSTALLED_APPS = [
     'django.contrib.sessions',
     'django.contrib.messages',
     'django.contrib.staticfiles',
-    'accounts', # Your DENR app
+    'accounts',
+    'tourism',
 ]
 
 MIDDLEWARE = [
