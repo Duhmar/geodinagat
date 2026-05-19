@@ -1,18 +1,14 @@
 import os
 from pathlib import Path
+import mimetypes
 
-# Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
 
-# SECURITY WARNING: keep the secret key used in production secret!
-# (If you had a different secret key here before, it is okay to use this one for local development)
 SECRET_KEY = 'django-insecure-replace-this-in-production'
 
-# SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = False 
+DEBUG = True
 ALLOWED_HOSTS = ['geodinagat.pythonanywhere.com', '127.0.0.1', 'localhost']
 
-# Application definition
 INSTALLED_APPS = [
     'django.contrib.admin',
     'django.contrib.auth',
@@ -34,13 +30,12 @@ MIDDLEWARE = [
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
 ]
 
-# THE MISSING LINE THAT CAUSED THE ERROR:
 ROOT_URLCONF = 'my_website.urls'
 
 TEMPLATES = [
     {
         'BACKEND': 'django.template.backends.django.DjangoTemplates',
-        'DIRS': [BASE_DIR / 'templates'], # This finds your home.html
+        'DIRS': [BASE_DIR / 'templates'], 
         'APP_DIRS': True,
         'OPTIONS': {
             'context_processors': [
@@ -48,6 +43,7 @@ TEMPLATES = [
                 'django.template.context_processors.request',
                 'django.contrib.auth.context_processors.auth',
                 'django.contrib.messages.context_processors.messages',
+                'tourism.context_processors.global_map_locations',
             ],
         },
     },
@@ -59,7 +55,7 @@ WSGI_APPLICATION = 'my_website.wsgi.application'
 DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.mysql',
-        'NAME': 'dinagat_db',         
+        'NAME': 'geodinagat',         
         'USER': 'root',               
         'PASSWORD': 'Group1!2!0!',  
         'HOST': 'localhost',           
@@ -78,3 +74,6 @@ LOGOUT_REDIRECT_URL = 'home'
 
 MEDIA_URL = '/media/'
 MEDIA_ROOT = os.path.join(BASE_DIR, 'media')
+
+mimetypes.add_type("text/css", ".css", True)
+mimetypes.add_type("application/javascript", ".js", True)

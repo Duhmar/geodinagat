@@ -1,96 +1,167 @@
 {% extends 'base.html' %}
+{% load static %}
+
 {% block content %}
 <style>
-    .chart-container {
-        position: relative;
-        height: 350px;
-        width: 100%;
+    .analytics-header {
+        background: rgba(255, 255, 255, 0.1);
+        backdrop-filter: blur(25px) saturate(200%);
+        -webkit-backdrop-filter: blur(25px) saturate(200%);
+        border: 1px solid rgba(255, 255, 255, 0.2);
+        border-radius: 40px;
+        padding: 40px 20px;
+        text-align: center;
+        box-shadow: 0 15px 35px rgba(0,0,0,0.2), inset 0 0 15px rgba(255,255,255,0.05);
+        margin-bottom: 40px;
     }
-    .glass-card {
-        background: rgba(10, 10, 15, 0.15); 
-        backdrop-filter: blur(35px) saturate(180%); -webkit-backdrop-filter: blur(35px) saturate(180%);
-        border: 1px solid rgba(255, 255, 255, 0.2); border-top: 1px solid rgba(255, 255, 255, 0.5);
-        border-radius: 24px; padding: 1.5rem; height: 100%;
-        box-shadow: 0 15px 35px rgba(0, 0, 0, 0.4), inset 0 0 15px rgba(255,255,255,0.05); 
+    .stat-card {
+        background: rgba(20, 20, 35, 0.35);
+        backdrop-filter: blur(30px) saturate(150%);
+        -webkit-backdrop-filter: blur(30px) saturate(150%);
+        border: 1px solid rgba(255, 255, 255, 0.15);
+        border-top: 1px solid rgba(255, 255, 255, 0.3);
+        border-left: 1px solid rgba(255, 255, 255, 0.3);
+        border-radius: 30px;
+        padding: 40px 20px;
+        text-align: center;
+        box-shadow: 0 20px 40px rgba(0,0,0,0.3);
+        transition: transform 0.3s ease, box-shadow 0.3s ease;
+        height: 100%;
+    }
+    .stat-card:hover {
+        transform: translateY(-10px);
+        box-shadow: 0 30px 60px rgba(0,0,0,0.4), inset 0 0 20px rgba(255,235,59,0.15);
+        border-color: rgba(255, 235, 59, 0.5);
+    }
+    .stat-title {
+        font-size: 0.9rem;
+        letter-spacing: 2px;
+        color: rgba(255,255,255,0.8);
+        margin-bottom: 15px;
+    }
+    .stat-value {
+        font-size: 4.5rem;
+        font-weight: 700;
+        color: white;
+        text-shadow: 0 0 20px rgba(255,255,255,0.4);
+        line-height: 1;
+    }
+    .stat-value.gold {
+        color: var(--gold-effect);
+        text-shadow: 0 0 20px rgba(255,235,59,0.6);
+    }
+    .glass-table-wrapper {
+        background: rgba(15, 15, 25, 0.45);
+        backdrop-filter: blur(35px) saturate(200%);
+        -webkit-backdrop-filter: blur(35px) saturate(200%);
+        border: 1px solid rgba(255, 255, 255, 0.15);
+        border-top: 1px solid rgba(255, 255, 255, 0.3);
+        border-left: 1px solid rgba(255, 255, 255, 0.3);
+        border-radius: 40px;
+        padding: 40px;
+        box-shadow: 0 25px 50px rgba(0,0,0,0.5), inset 0 0 20px rgba(255,255,255,0.05);
+        margin-top: 40px;
+        margin-bottom: 50px;
+    }
+    .glass-table {
+        width: 100%;
+        border-collapse: separate;
+        border-spacing: 0;
+        margin-top: 25px;
+    }
+    .glass-table th {
+        color: rgba(255,255,255,0.7);
+        font-size: 0.85rem;
+        font-weight: 600;
+        text-transform: uppercase;
+        letter-spacing: 1.5px;
+        padding: 15px 25px;
+        border-bottom: 1px solid rgba(255,255,255,0.25);
+    }
+    .glass-table td {
+        padding: 25px 25px;
+        color: white;
+        border-bottom: 1px solid rgba(255,255,255,0.08);
+        vertical-align: middle;
+        transition: background 0.3s;
+    }
+    .glass-table tr:last-child td { border-bottom: none; }
+    .glass-table tbody tr { transition: all 0.3s ease; }
+    .glass-table tbody tr:hover td { background: rgba(255, 255, 255, 0.1); }
+    .glass-table tbody tr:hover td:first-child { border-top-left-radius: 15px; border-bottom-left-radius: 15px; }
+    .glass-table tbody tr:hover td:last-child { border-top-right-radius: 15px; border-bottom-right-radius: 15px; }
+    .like-badge {
+        background: rgba(255, 235, 59, 0.95);
+        color: black;
+        font-weight: 700;
+        padding: 10px 22px;
+        border-radius: 50px;
+        display: inline-flex;
+        align-items: center;
+        gap: 8px;
+        box-shadow: 0 8px 20px rgba(255,235,59,0.5);
     }
 </style>
 
-<div class="text-center mb-5 animate-fadeInScale">
-    <h1 class="display-4 text-white" style="text-shadow: 0 0 20px rgba(255, 235, 59, 0.6); font-weight: 300;">GeoDinagat Analytics</h1>
-    <p class="text-white opacity-75">Real-time tourism and accommodation tracking.</p>
-</div>
+<div class="row justify-content-center">
+    <div class="col-12 col-xl-10">
+        <div class="analytics-header">
+            <h1 class="display-5 fw-bold text-warning mb-3" style="text-shadow: 0 0 15px rgba(255,235,59,0.4);">Community Engagement Analytics</h1>
+            <p class="lead text-white opacity-75 mb-0">Real-time metrics tracking user uploads, community discussions, and ecological reports.</p>
+        </div>
 
-<div class="row g-4">
-    <!-- Top Spots Bar Chart -->
-    <div class="col-md-7">
-        <div class="glass-card animate-zoomIn">
-            <h5 class="text-white mb-4" style="color: var(--gold-effect) !important;">Most Popular Locations</h5>
-            <div class="chart-container">
-                <canvas id="spotsChart"></canvas>
+        <div class="row g-4">
+            <div class="col-md-4">
+                <div class="stat-card">
+                    <div class="stat-title text-uppercase fw-bold">Total User Reports</div>
+                    <div class="stat-value">{{ total_reports|default:"0" }}</div>
+                </div>
+            </div>
+            <div class="col-md-4">
+                <div class="stat-card">
+                    <div class="stat-title text-uppercase fw-bold">Community Comments</div>
+                    <div class="stat-value">{{ total_comments|default:"0" }}</div>
+                </div>
+            </div>
+            <div class="col-md-4">
+                <div class="stat-card">
+                    <div class="stat-title text-uppercase fw-bold">Mapped Tourist Spots</div>
+                    <div class="stat-value gold">{{ total_spots|default:"0" }}</div>
+                </div>
+            </div>
+        </div>
+
+        <div class="glass-table-wrapper">
+            <h4 class="text-warning fw-bold mb-1" style="text-shadow: 0 0 15px rgba(255,235,59,0.4);">Highest Rated Community Reports</h4>
+            <div class="table-responsive">
+                <table class="glass-table">
+                    <thead>
+                        <tr>
+                            <th>Report Title</th>
+                            <th>Author</th>
+                            <th class="text-end">Engagement (Likes)</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for report in top_reports %}
+                        <tr>
+                            <td class="fw-bold fs-5">{{ report.title }}</td>
+                            <td class="text-white-50 fw-semibold">@{{ report.author.username }}</td>
+                            <td class="text-end">
+                                <div class="like-badge">
+                                    <span style="font-size: 1.2rem; line-height: 1;">♥</span> {{ report.likes.count }}
+                                </div>
+                            </td>
+                        </tr>
+                        {% empty %}
+                        <tr>
+                            <td colspan="3" class="text-center text-white-50 py-4">No reports uploaded yet.</td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
             </div>
         </div>
     </div>
-
-    <!-- Hotel Rooms Doughnut Chart -->
-    <div class="col-md-5">
-        <div class="glass-card animate-zoomIn" style="animation-delay: 0.2s;">
-            <h5 class="text-white mb-4" style="color: var(--gold-effect) !important;">Hotel Room Availability</h5>
-            <div class="chart-container">
-                <canvas id="hotelsChart"></canvas>
-            </div>
-        </div>
-    </div>
 </div>
-
-<!-- Load Chart.js Library -->
-<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-
-<script>
-    // Safely parse the JSON data from Django
-    const spotNames = JSON.parse('{{ spot_names|safe }}');
-    const spotData = JSON.parse('{{ spot_engagement|safe }}');
-    
-    const hotelNames = JSON.parse('{{ hotel_names|safe }}');
-    const hotelData = JSON.parse('{{ hotel_rooms|safe }}');
-
-    // Chart global defaults for aesthetic glass theme
-    Chart.defaults.color = 'rgba(255, 255, 255, 0.7)';
-    Chart.defaults.font.family = "'Poppins', sans-serif";
-
-    // 1. Render Top Spots Chart
-    new Chart(document.getElementById('spotsChart'), {
-        type: 'bar',
-        data: {
-            labels: spotNames,
-            datasets: [{
-                label: 'Total Engagement (Likes + Comments)',
-                data: spotData,
-                backgroundColor: 'rgba(255, 235, 59, 0.6)', // Gold effect
-                borderColor: 'rgba(255, 235, 59, 1)',
-                borderWidth: 2,
-                borderRadius: 8
-            }]
-        },
-        options: {
-            responsive: true,
-            maintainAspectRatio: false,
-            scales: { y: { beginAtZero: true, grid: { color: 'rgba(255,255,255,0.1)' } }, x: { grid: { display: false } } }
-        }
-    });
-
-    // 2. Render Hotel Availability Chart
-    new Chart(document.getElementById('hotelsChart'), {
-        type: 'doughnut',
-        data: {
-            labels: hotelNames,
-            datasets: [{
-                data: hotelData,
-                backgroundColor: ['#ff3d00', '#ffeb3b', '#2196f3', '#e91e63', '#00e676'],
-                borderWidth: 0,
-                hoverOffset: 10
-            }]
-        },
-        options: { responsive: true, maintainAspectRatio: false, cutout: '70%' }
-    });
-</script>
 {% endblock %}

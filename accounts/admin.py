@@ -1,15 +1,8 @@
 from django.contrib import admin
-from .models import Report, ReportMedia, Profile, Comment, Hotel, RoomBooking, Municipality, Accommodation, TouristSpot, TransportationTerminal
+from .models import Report, ReportMedia, Profile, Comment
 
-# Registering your existing models
+# Only register models that actually live in accounts/models.py
 admin.site.register(Report)
 admin.site.register(ReportMedia)
 admin.site.register(Profile)
 admin.site.register(Comment)
-
-admin.site.register(Hotel)
-admin.site.register(RoomBooking)
-admin.site.register(Municipality)
-admin.site.register(Accommodation)
-admin.site.register(TouristSpot)
-admin.site.register(TransportationTerminal)

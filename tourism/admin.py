@@ -1,3 +1,7 @@
 from django.contrib import admin
+from .models import Municipality, Accommodation, TouristSpot, TransportationTerminal
 
-# Register your models here.
+admin.site.register(Municipality)
+admin.site.register(Accommodation)
+admin.site.register(TouristSpot)
+admin.site.register(TransportationTerminal)

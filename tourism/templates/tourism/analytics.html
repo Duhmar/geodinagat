@@ -1,0 +1,63 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<div class="container py-4">
+    <div class="p-4 mb-5 text-center rounded-5" style="background: rgba(255, 255, 255, 0.1); backdrop-filter: blur(20px); border: 1px solid rgba(255,255,255,0.2);">
+        <h1 class="fw-bold text-warning mb-2" style="text-shadow: 0 0 15px rgba(255,235,59,0.4);">Community Engagement Analytics</h1>
+        <p class="text-white-50 mb-0">Real-time metrics tracking user uploads, community discussions, and ecological reports.</p>
+    </div>
+
+    <div class="row g-4 mb-5">
+        <div class="col-12 col-md-4">
+            <div class="p-4 rounded-4 text-center h-100" style="background: rgba(0, 0, 0, 0.25); border: 1px solid rgba(255,255,255,0.1);">
+                <h6 class="text-white-50 text-uppercase tracking-wider small mb-2">Total User Reports</h6>
+                <h2 class="display-5 fw-bold text-white mb-0">{{ total_reports }}</h2>
+            </div>
+        </div>
+        <div class="col-12 col-md-4">
+            <div class="p-4 rounded-4 text-center h-100" style="background: rgba(0, 0, 0, 0.25); border: 1px solid rgba(255,255,255,0.1);">
+                <h6 class="text-white-50 text-uppercase tracking-wider small mb-2">Community Comments</h6>
+                <h2 class="display-5 fw-bold text-success mb-0">{{ total_comments }}</h2>
+            </div>
+        </div>
+        <div class="col-12 col-md-4">
+            <div class="p-4 rounded-4 text-center h-100" style="background: rgba(0, 0, 0, 0.25); border: 1px solid rgba(255,255,255,0.1);">
+                <h6 class="text-white-50 text-uppercase tracking-wider small mb-2">Mapped Tourist Spots</h6>
+                <h2 class="display-5 fw-bold text-warning mb-0">{{ total_spots }}</h2>
+            </div>
+        </div>
+    </div>
+
+    <div class="row">
+        <div class="col-12">
+            <div class="p-4 rounded-4" style="background: rgba(0, 0, 0, 0.25); border: 1px solid rgba(255,255,255,0.1);">
+                <h4 class="fw-bold text-warning mb-4">Highest Rated Community Reports</h4>
+                <div class="table-responsive">
+                    <table class="table table-dark table-hover table-borderless m-0 align-middle">
+                        <thead>
+                            <tr class="text-white-50 border-bottom border-secondary">
+                                <th scope="col" class="pb-3">Report Title</th>
+                                <th scope="col" class="pb-3">Author</th>
+                                <th scope="col" class="pb-3 text-end">Engagement (Likes)</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for report in popular_reports %}
+                            <tr class="border-bottom border-secondary border-opacity-20">
+                                <td class="py-3 fw-bold text-white">{{ report.title }}</td>
+                                <td class="py-3 text-white-50">@{{ report.author.username }}</td>
+                                <td class="py-3 text-end"><span class="badge bg-warning text-dark fw-bold px-3 py-2 fs-6">♥ {{ report.num_likes }}</span></td>
+                            </tr>
+                            {% empty %}
+                            <tr>
+                                <td colspan="3" class="text-center text-white-50 py-4">No reports uploaded yet. Be the first to share an ecological update!</td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

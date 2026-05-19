@@ -1,0 +1,11 @@
+{% extends 'base.html' %}
+{% block content %}
+<div class="container text-center py-5">
+    <div class="p-5 rounded-5" style="background: rgba(0, 0, 0, 0.4); backdrop-filter: blur(20px); border: 1px solid rgba(255,255,255,0.2);">
+        <h1 class="display-4 fw-bold text-warning mb-3">📍 You are Offline</h1>
+        <p class="lead text-white-50">You are currently navigating the Dinagat Islands disconnected from the network.</p>
+        <p class="text-white opacity-75">Your local database connection is paused. Please reconnect to view live mapping and community engagement data.</p>
+        <a href="/" class="btn btn-warning mt-3 px-4 fw-bold">Try Reconnecting</a>
+    </div>
+</div>
+{% endblock %}
